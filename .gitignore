@@ -1,0 +1,8 @@
+
+*.pyc
+mazebox/.DS_Store
+mazebox/plotting/.DS_Store
+mazebox/plasticity/.DS_Store
+mazebox/archetypes/.DS_Store
+mazebox/preprocessing/.DS_Store
+.DS_Store
