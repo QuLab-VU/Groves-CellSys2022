@@ -1,0 +1,13 @@
+archetype #,Feature Name,P value (Hypergeom.),Significant after Benjamini-Hochberg correction?,P maximal
+1,response cluster: Exceptional,0.098313,1,0.12677
+1,response cluster: None,0.34579,1,0.025806
+1,response cluster: Average,0.68487,1,0.00021017
+1,response cluster: Poor,1,1,4.4435e-13
+2,response cluster: None,0.34579,1,0.025806
+2,response cluster: Poor,0.47274,1,0.00878
+2,response cluster: Exceptional,0.63717,1,0.00099946
+2,response cluster: Average,0.90052,1,2.6025e-06
+3,response cluster: Poor,0.19959,1,0.10584
+3,response cluster: Average,0.39082,1,0.020107
+3,response cluster: Exceptional,1,1,1.3336e-10
+3,response cluster: None,1,1,9.3736e-05
