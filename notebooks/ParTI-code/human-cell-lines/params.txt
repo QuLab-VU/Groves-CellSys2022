@@ -1,0 +1,2 @@
+outputFileName,algNum,dim,binSize, nArchetypes, pval
+645734, 5, 12, 1.000000e-01, 5
