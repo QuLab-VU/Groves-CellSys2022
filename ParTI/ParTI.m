@@ -1,4 +1,4 @@
-function [arc, arcOrig, pc, errs, pval, coefs1,P] = ParTI(DataPoints,algNum,dim,DiscFeatName,EnMatDis,cols,ContFeatName,EnMatCont,GOcat2Genes,binSize,OutputFileName,arcOrig)
+function [arc, arcOrig, pc, errs, pval, coefs1,P, tRatioRand, tRatioReal] = ParTI(DataPoints,algNum,dim,DiscFeatName,EnMatDis,cols,ContFeatName,EnMatCont,GOcat2Genes,binSize,OutputFileName,arcOrig)
 %% Inputs
 % 1. DataPoints, double matrix with the values of different traits 
 % (the coordinates, e.g. expression level of genes). Each sample is a row, 
@@ -119,7 +119,7 @@ if exist('lowIterations', 'var') && ~isempty(lowIterations)
 end
 
 if size(arcOrig,1) == 0
-    [pc, arc, arcOrig, errs, pval, coefs1] = findArchetypes(DataPoints,algNum,dim,OutputFileName,numIter,maxRuns);
+    [pc, arc, arcOrig, errs, pval, coefs1, tRatioRand, tRatioReal] = findArchetypes(DataPoints,algNum,dim,OutputFileName,numIter,maxRuns);
 else
     %We allow passing archetypes so that indexing can stay constant from run to run
     fprintf('Will use archetypes passed as argument instead of determining them from scratch.\n');
@@ -132,7 +132,7 @@ else
     pval = nan;
 end
 
-
+% P = 0;
 
 P = calculateEnrichment(pc(:,1:size(arc,2)),arc,DiscFeatName,EnMatDis,ContFeatName,EnMatCont,binSize,OutputFileName,numIter,algNum,GOcat2Genes,DataPoints,maxRuns);
 
