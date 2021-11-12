@@ -1,0 +1,372 @@
+---
+title: "SCLC cell line gene expression data cleaning and assembly"
+output: 
+    html_notebook:
+        toc: yes
+author: Darren Tyson
+date: Nov 11, 2021
+---
+### NOTE: Code originally from `QuLab-VU/SCLC/RNA-seq/code/SCLC data cleaning-assembly.Rmd`
+Modified to be executable from within `QuLab-VU/Groves-CellSys2021`. To process from raw data, must have access to `vu1file` as mounted device.
+
+### Overview
+The goal of this notebook is to combine multiple datasets of small cell lung cancer (SCLC) cell line RNA transcript levels into a single large matrix to allow for clustering of cell lines by similar gene expression patterns. These datasets include RNA-seq data from John Minna's lab, RNA-seq data from the Cancer Cell Line Encyclopedia (CCLE), and microarray data from the Genomics of Drug Sensitivity in Cancer (GDSC) consortium (Wellcome Trust/Sanger Institute/Massacussets General Hospital).  
+
+Much of the code has been copied from the files `consensus_clustering_CCLE+Minna_RNAseq_DRT.Rmd` and `SCLC cell line clustering.Rmd`. This file will supercede those, which will subsequently be removed (although they will still be accessible from the Git repository).
+
+#### Standardizing gene names
+The focus of this work is on the coding genes. However, the data has been obtained from different sources using different gene identifiers. In order to standardize this, we will attempt to use [BioMart](https://www.biomart.org) as a primary reference for gene names.
+
+### Dataset information
+#### Minna data
+mRNA-seq data of SCLC cell lines deposited by Minna lab into MSKC SCLC cBioPortal http://sclc.cbioportal.org/sclc/
+
+To access, needed to provide Google credentials and request access.
+Clicked `Download data` tab and selected "Small-Cell Lung Cancer Cell Lines (Minna Lab 2017)" and "mRNA expression (RNAseq)"
+
+As of 2020-06-21, the download option is no longer available from the SCLC cBioPortal. It is suggested that `cBioPortalData` be used, but this is a BioConductoR package that is only available for version >4.x of R.
+
+Downloading required providing specific gene names: used all human protein-coding gene names available at ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/tsv/locus_types/gene_with_protein_product.txt
+
+Had to remove "SCYGR9" as it was not considered a valid gene name by cBioPortal. 
+Saved gene name data in `gene_with_protein_product.txt`.
+
+The RNA-seq data are described as being FPKM values. **NOTE**: To convert to TPM must divide each value by the sum of all values in the sample X 1e-6.
+See https://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/ for a description of the various read count metrics.
+
+
+#### CCLE data
+CCLE data were downloaded from https://portals.broadinstitute.org/ccle/data (requires registration and login).
+The file is large and has been converted to `fst` format to expedite file loading; this requires the `fst` R package.
+
+The downloaded filename to be used is `CCLE_RNAseq_rsem_genes_tpm_20180929.txt.gz`, which contains gene-level quantification of reads normalized to TPM.
+
+The read data were aligned to a reference genome (GENCODE 19 annotation) and quantified using RNA-Seq by Expectation-Maximization (RSEM; https://deweylab.github.io/RSEM/). The transcripts per million reads (TPM) for each gene appear to have been summed from all transcripts, but it is possible the quantification was more complex, based on information from the GTeX website to which the Broad refers (https://www.gtexportal.org/home/documentationPage):  
+Collapsed Gene Model:
+Gene-level expression quantification was based on the GENCODE 19 annotation, collapsed to a single transcript model for each gene using a custom isoform collapsing procedure. Code for generating the collapsed model is available at https://github.com/broadinstitute/gtex-pipeline/tree/master/gene_model . 
+
+A summary of the steps follow:  
+Gene-level expression and eQTLs from the GTEx project are calculated based on a collapsed gene model (i.e., combining all isoforms of a gene into a single transcript), according to the following rules:
+
+*1. Transcripts annotated as “retained_intron” or “read_through” are excluded. Additionally, transcripts that overlap with annotated read-through transcripts may be blacklisted (blacklists for GENCODE v19, 24 & 25 are provided in this repository; no transcripts were blacklisted for v26).
+*2. The union of all exon intervals of each gene is calculated.
+*3. Overlapping intervals between genes are excluded from all genes.
+
+Gene-level quantifications: read counts and TPM values were produced with RNA-SeQC v1.1.9 (DeLuca et al., Bioinformatics, 2012), using the following read-level filters:
+
+* Reads were uniquely mapped (corresponding to a mapping quality of 255 for START BAMs).
+* Reads were aligned in proper pairs.
+* The read alignment distance was <=6 (i.e., alignments must not contain more than six non-reference bases).
+* Reads were fully contained within exon boundaries. Reads overlapping introns were not counted.
+* These filters were applied using the “-strictMode” flag in RNA-SeQC.
+
+The TPM values that are downloadable have not been normalized or corrected for any covariates.
+
+**Added 2019-06-17**
+Protein coding genes from GENCODE 19 will be extracted and saved in file `GENCODE_19_coding_gene_names.csv`.
+
+#### GDSC data
+Data from SCLC cell lines assessed for RNA transcript levels using microarray technology by the Wellcome Trust (Sanger Institute) is available from https://www.cancerrxgene.org/downloads. Data were downloaded as RMA-normalized expression levels from: ftp://ftp.sanger.ac.uk/pub/project/cancerrxgene/releases/current_release/sanger1018_brainarray_ensemblgene_rma.txt.gz .  
+The file is large and has been converted to `fst` format to expedite file loading. This requires the `fst` R package.
+
+**Added 2020-01-29**
+New version of data available from https://www.cancerrxgene.org/gdsc1000/GDSC1000_WebResources//Data/preprocessed/Cell_line_RMA_proc_basalExp.txt.zip
+
+File downloaded to `/vu1file/quaranta/Data/GENE EXPRESSION/GDSC/Cell_line_RMA_proc_basalExp.txt.zip`
+
+
+### Load packages and functions
+Setup code (loading packages and functions) is currently hidden. To show in markdown document, change `include` to `TRUE`.
+```{r Setup, include=FALSE}
+# BiocManager::install("biomaRt")
+# BiocManager::install("cBioPortalData")
+library(fst)
+library(rtracklayer)            # needed for readGFF if reading in fst files
+library(readxl)
+library(quantro)
+library(biomaRt)
+
+######### FUNCTIONS ###########
+
+cleanCCLEdata <- function(z, 
+                          clsubset='SCLC',
+                          clinfopath='../data/bulk-rna-seq/CCLE_Cell_lines_annotations_20181226.txt',
+                          ensembl_to_HCGN=entrez_ids)
+{
+    clannot <- read.csv(clinfopath,sep='\t',as.is=TRUE)
+
+    # remove version identifier from ensembl gene ID
+    z$gene_id <- sapply(strsplit(z$gene_id,"\\."), "[[", 1)
+    # obtain gene name using ENSEMBL ID
+    z$Gene <- ensembl_to_HCGN[match(z$gene_id,ensembl_to_HCGN$ensembl_gene_id),'hgnc_symbol']
+
+    # remove rows with duplicate gene names
+    z <- z[!duplicated(z$Gene),]
+    
+    # remove genes without names
+    z <- z[!is.na(z$Gene),]
+    
+    # move gene names to rownames
+    rownames(z) <- z$Gene
+    
+    # remove columns not containing numeric values
+    z <- z[,sapply(colnames(z), function(cn) class(z[,cn])=='numeric')]
+
+    # order by gene name (rownames)
+    z <- z[order(rownames(z)),] 
+    
+    if(clsubset=='SCLC')
+    {
+        cln <- clannot[clannot$tcga_code=='SCLC' & !is.na(clannot$tcga_code),'CCLE_ID']
+        z <- z[,colnames(z) %in% cln]
+    } else {
+        # will subset based on clsubset matching any substring in any column name
+        if(any(grepl(clsubset,colnames(z))))
+            z <- z[,grepl(clsubset,colnames(z))]
+    }
+
+    # remove tissue site info from cell line name (column names)
+    colnames(z) <- sapply(colnames(z), function(x) strsplit(x,'_')[[1]][1])
+
+    # leave "NCI" designation to maintain consistency across datasets
+    # colnames(z) <- gsub('^NCI','',colnames(z))
+
+    # put data in log2 scale; must first set values < 1 to 1
+    z <- as.matrix(z, rownames=TRUE)
+
+    # make 0 values == the next lowest value (e.g. 0.01) before logging
+    # z[z==0] <- min(z[z!=0])
+    
+    # convert to log2
+    z <- log2(z + 1)
+    
+    # make -Inf values == lowest finite value
+    # z[is.infinite(z)] <- min(z[is.finite(z)])
+
+    return(z)
+}
+
+cleanMinnaData <- function(z)
+{
+    # remove first column (GENE_ID)
+    z <- z[,-1]
+    # move gene names (COMMON) to rownames and remove column
+    rownames(z) <- z[,1]
+    z <- z[,-1]
+    # remove cell lines with all NAs
+    z <- z[,!apply(z,2,function(x) all(is.na(x)))]
+    # remove gene with all NAs
+    z <- z[!apply(z,1,function(x) all(is.na(x))),]
+    # remove mitochondrial genes
+    z <- z[!grepl('^MT-',rownames(z)),]
+    
+    # remove periods from cell line names (colnames)
+    colnames(z) <- gsub('.','',colnames(z),fixed=TRUE)
+    
+    # Add "NCI" in front of H-designation cell lines to match other datasets
+    colnames(z)[grepl('^H[1-9]',colnames(z))] <-  
+        paste0('NCI',colnames(z)[grepl('^H[1-9]',colnames(z))])
+
+    # convert to log2(TPM)
+    # FPKM to TPM: divide each value by the sum of all values in the sample X 1e-6
+    z <- log2(apply(2^z, 2, function(x) (x/(sum(x)*1e-6))))
+    
+    return(z)
+}
+
+cleanGDSCdata <- function(z, 
+                          clinfopath='../data/bulk-rna-seq/GDSC_Cell_Lines_Details.xlsx', 
+                          geneinfopath="../data/bulk-rna-seq/ENSEMBL-GENE_ID_Table.txt",
+                          clsubset='SCLC')
+{
+    # NOTE: colnames are COSMIC IDs for cell lines
+    # must match using annotation file from GDSC
+    clinfo <- read_xlsx(clinfopath)
+    cn <- colnames(clinfo)
+    cn <- gsub('\r\n', ' ', cn, fixed=TRUE)
+    cn <- gsub('  ', ' ', cn)
+    colnames(clinfo) <- cn
+    clinfo <- as.data.frame(clinfo)
+    clinfo$cell.line <- gsub('-','',toupper(clinfo$"Sample Name"))
+    # leave "NCI" prefix on Minna cell lines for consistency with other data
+    # clinfo$cell.line <- gsub('^NCI','',clinfo$cell.line)
+    
+    lungcl <- clinfo[
+        grep('[lL]ung',clinfo[,'GDSC Tissue descriptor 2']),
+        'cell.line']
+    sclccl <- clinfo[grep('small',clinfo[,'GDSC Tissue descriptor 2']),
+                     'cell.line']
+
+    # move gene names to rownames and remove column
+    rownames(z) <- z[,1]
+    z <- z[,-1]
+    # remove cell lines with all NAs
+    z <- z[,!apply(z,2,function(x) all(is.na(x)))]
+    # remove gene with all NAs
+    z <- z[!apply(z,1,function(x) all(is.na(x))),]
+    # remove mitochondrial genes
+    z <- z[!grepl('^MT-',rownames(z)),]
+
+    geneinfo <- read.csv(geneinfopath,sep='\t')
+    gn <- sapply(rownames(z), function(x)
+        geneinfo[match(x,geneinfo$Ensembl.gene.ID),'Approved.symbol'])
+
+    # remove genes without gene name
+    z <- z[!is.na(gn),]
+    rownames(z) <- gn[!is.na(gn)]
+    
+    clname <- sapply(colnames(z), function(x) 
+        clinfo[match(gsub('^X','',x),clinfo$'COSMIC identifier'),'cell.line'])
+    colnames(z) <- clname
+
+    # return subset of data based on value of clsubset; default is "SCLC"
+    if(clsubset == 'SCLC')
+    {
+        return(z[,colnames(z) %in% sclccl])
+    } else if (clsubset == 'lung'){
+        return(z[,colnames(z) %in% lungcl])
+    } else {
+        return(z)
+    }
+}
+
+
+```
+### Summary of cleaning steps
+
+* **CCLE**
+    1) subset only coding genes
+    2) obtain gene name using ENSEMBL ID from `gencode.v19.genes.v7_model.patched_contigs`
+    3) remove rows with duplicate gene names
+    4) move gene names to rownames
+    5) remove columns not containing numeric values
+    6) order by gene name (rownames)
+    7) remove tissue site info from cell line name (column names)
+    8) leave "NCI" designation to maintain consistency across datasets
+    9) put data in log2 scale (log2(counts + 1))
+
+* **Minna**
+    1) remove first column (GENE_ID)
+    2) move gene names (COMMON) to rownames and remove column
+    3) remove cell lines with all NAs
+    4) remove gene with all NAs
+    5) remove mitochondrial genes
+    6) remove periods from cell line names (colnames)
+    7) Add "NCI" in front of H-designation cell lines to match other datasets  
+    8) Convert from log2(FPKM) to TPM and scale back to log2
+
+* **GDSC**  
+*NOTE*: colnames are COSMIC IDs for cell lines; must match using annotation file from GDSC
+    1) read in annotation (clinical information) file in Excel format
+    2) clean column names
+    3) make `cell.line` column from `Sample Name` and removing `-`
+    4) leave `NCI` prefix on Minna cell lines for consistency with other data
+    5) identify SCLC cell lines by searching for `small` in `GDSC Tissue descriptor 2` in annotation
+    6) move gene names to rownames and remove column
+    7) remove cell lines with all NAs
+    8) remove gene with all NAs
+    9) remove mitochondrial genes
+    10) replace ENSEMBL gene ID with Approved Symbol
+    11) remove genes without gene name
+    12) use COSMIC ID to determine cell line name
+
+
+    
+### Load raw data and compile
+This requires access to large raw data files on `vu1file`. SCLC cell line data should now have been compiled and saved into a common file and saved within the Git repo and no longer needs to be run (see below).
+
+Catalina no longer supports symlinks to external drives. On new iMacPro use `/Volumes/quaranta` in place of `/mnt/vu1file`.
+```{r Load data}
+# gtf <- readGFF("/Volumes/quaranta/Data/RNAseq/CCLE (all data)/gencode.v19.genes.v7_model.patched_contigs.gtf.gz", version=2L)
+
+# keep only coding genes
+# gtf <- gtf[gtf$gene_type=='protein_coding',]
+
+# pc_gencode <- read.csv("../data/GENECODE19_coding_genes.csv", as.is=TRUE)[,1]
+pc_ebi <- read.csv("../data/bulk-rna-seq/gene_with_protein_product.txt", as.is=TRUE, sep="\t")
+pc_ebi_names <- pc_ebi$symbol
+
+entrez_ids <- getBM(attributes = c("hgnc_symbol",
+                                   "entrezgene_id",
+                                   "ensembl_gene_id"), 
+                    filters = "hgnc_symbol", 
+                    values = pc_ebi_names, 
+                    bmHeader = T, 
+                    mart = useMart(
+                      biomart="ensembl",
+                      host = 'http://useast.ensembl.org',
+                      dataset="hsapiens_gene_ensembl")
+                    )
+colnames(entrez_ids)=c("hgnc_symbol","entrez_gene_id","ensembl_gene_id")
+
+
+
+gfstpath <- '/Volumes/quaranta/Data/GENE EXPRESSION/GDSC/sanger1018_brainarray_ensemblgene_rma.txt.fst'
+g <- read.fst(gfstpath)
+g <- cleanGDSCdata(g)
+
+# previous CCLE data (assembled by Sarah (Maddox) Groves)
+#d <- read.csv(file.path('../data/lung_tpm_final.csv'),as.is=TRUE)
+
+# the file "CCLE_RNAseq_rsem_genes_tpm_20180929.txt.gz" contains all 
+# transcript variants for each gene collapsed into a single value
+cdatapath <- file.path('/Volumes/quaranta/Data/RNAseq/CCLE (all data)/CCLE_RNAseq_rsem_genes_tpm_20180929.txt.gz')
+
+cfstpath <- file.path('/Volumes/quaranta/Data/RNAseq/CCLE (all data)/CCLE_RNAseq_rsem_genes_tpm_20180929.txt.fst')
+# d2 <- read.csv(cdatapath, sep='\t', as.is = T, check.names = F)
+# write.fst(d2,path=cfstpath)
+
+do <- read.fst(cfstpath)
+# clean CCLE data
+d <- cleanCCLEdata(do)
+
+# tempgenes <- intersect(rownames(d),rownames(d2))[201:300]
+# plot(as.matrix(d2[tempgenes,]),as.matrix(d[tempgenes,]))
+
+# load Minna data
+mo <- read.csv(file.path('../data/bulk-rna-seq/cBioPortal_data_Minna_mRNA-seq.csv'),as.is=TRUE)
+m <- cleanMinnaData(mo)
+
+# different gene sets
+allgenes <- sort(union(union(rownames(m),rownames(d)),rownames(g)))
+commongenes <- intersect(intersect(rownames(g),rownames(d)),rownames(m))
+
+# NEUROD1 is missing from GDSC data (no oligos to that gene); must add back to
+# include from other datasets
+# commongenes <- sort(c(commongenes,'NEUROD1'))
+
+# GDSC data
+gtemp <- g
+colnames(gtemp) <- paste0('g.',colnames(gtemp))
+
+# CCLE data
+ctemp <- as.data.frame(d)
+colnames(ctemp) <- paste0('c.',colnames(ctemp))
+
+# Minna data
+mtemp <- m
+colnames(mtemp) <- paste0('m.',colnames(mtemp))
+
+# combine all data keeping all genes
+ad <- data.frame(gene=as.character(allgenes))
+ad <- cbind(ad,gtemp[allgenes,])
+ad <- cbind(ad,ctemp[allgenes,])
+ad <- cbind(ad,data.frame(mtemp)[allgenes,])
+rownames(ad) <- ad$gene
+ad <- ad[,-1]
+```
+
+### Examine distributions
+Use `matdensity` function from `quantro` package. Data must be in matrix and no `NA` values allowed.
+```{r}
+matdensity(as.matrix(ad[!apply(ad,1,function(x) any(is.na(x))),]), groupFactor=substr(colnames(ad),1,1))
+legend("topright", legend=sort(unique(substr(colnames(ad),1,1))), col=RColorBrewer::brewer.pal(8, "Dark2")[1:3], lwd=2)
+```
+
+
+### Save combined data file
+To prevent having to compile all the data every time, and to reduce the amount of data loaded (the GDSC data has >1000 cell lines worth of data), we will save the assembled data (`ad`) into the `../data/` directory.  Already run; no need to run again.  
+
+```{r eval=FALSE}
+write.csv(ad, file='../data/bulk-rna-seq/combined_CCLE_GDSC_Minna_geneexp.csv')
+```
