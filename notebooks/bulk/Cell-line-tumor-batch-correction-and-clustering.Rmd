@@ -1,0 +1,409 @@
+---
+title: "SCLC Cell Line and Tumor Clustering"
+output: 
+    html_notebook:
+        self_contained: yes
+        toc: yes
+        toc_depth: 4
+---
+### Load R packages
+```{r Setup, message=FALSE, warning=FALSE}
+# BiocManager::install("biomaRt")
+# library(fst)
+library(rtracklayer)            # needed for readGFF if reading in fst files
+library(readxl)
+library(quantro)
+library(biomaRt)
+
+BiocManager::install("impute")
+
+library(sva)
+library(gplots)
+library(quantro)
+library(dendextend)
+library(impute)
+
+colbranches <- function(n, col)
+{
+    # code modified from https://stackoverflow.com/questions/18036094/how-to-create-a-dendrogram-with-colored-branches
+    a <- attributes(n) # Find the attributes of current node
+    # Color edges with requested color
+    attr(n, "edgePar") <- c(a$edgePar, list(col=col, lwd=2))
+    n # Don't forget to return the node!
+}
+
+# extract information from dendrogram (e.g. colors for each node)
+getLeafColors <- function(mydend) {
+    sd <- mydend
+    myleafs <- sd %>% get_nodes_attr("label")
+    myedgepar <- sd %>% get_nodes_attr("edgePar")
+    mycol <- sapply(myedgepar, "[[", 1)
+    names(mycol) <- myleafs
+    # remove NA values (should only have sample IDs and colors left)
+    mycol <- mycol[!is.na(mycol)]
+    mycol <- mycol[!is.na(names(mycol))]
+    return(mycol)
+}
+
+```
+
+### Load data
+First, load data, separate RNA-seq data (CCLE and Minna) and remove low-expressed genes.
+```{r}
+cm <- read.csv("../../data/bulk-rna-seq/SCLC_combined_Minna_CCLE_batch_corrected_wo_lowgenes.csv", as.is=TRUE,
+               row.names=1)
+
+to <- read.csv(file.path('../../data/bulk-rna-seq/thomas_tumors.csv'),as.is=TRUE, row.names = 1)
+t <- to
+colnames(t) <- paste0('t.',colnames(t))
+
+# different gene sets
+allgenes <- sort(rownames(cm))
+commongenes <- intersect(rownames(t),rownames(cm))
+
+
+# combine all data keeping all genes
+ad <- data.frame(gene=as.character(allgenes))
+ad <- cbind(ad,cm[allgenes,])
+ad <- cbind(ad,t[allgenes,])
+rownames(ad) <- ad$gene
+ad <- ad[,-1]
+matdensity(as.matrix(ad[!apply(ad,1,function(x) any(is.na(x))),]), groupFactor=substr(colnames(ad),1,1))
+legend("topright", legend=sort(unique(substr(colnames(ad),1,1))), col=RColorBrewer::brewer.pal(8, "Dark2")[1:3], lwd=2)
+
+# genes with missing data
+genes_w_na <- rownames(ad)[apply(ad, 1, function(x) any(is.na(x)))]
+
+# essential genes (genes that are missing from microarray data but need to be included for biological interpretation)
+# missing_immune_genes <- c("NCR3LG1","MICA","ENTPD1","CD24")
+
+lowgenes <- rownames(ad)[apply(ad, 1, function(x) all(x<log2(2)))]
+
+
+# # save gene expression values of only variable genes in linear and log2 scale
+# gev <- as.matrix(ad[vargenes,])
+gev <- as.matrix(ad[!rownames(ad) %in% lowgenes,])
+
+# # show which data sources have NA values for each essential gene
+# message("Source with NA in specific genes")
+# sapply(essential_missing_genes, function(x) sapply(c("c","m","t"), function(z) 
+#     anyNA(as.matrix(ad[x,substr(colnames(ad),1,1)==z]))))
+
+# genes common to all datasets
+commongenes <- rownames(ad)[!apply(ad, 1, function(x) any(is.na(x)))]
+```
+
+#### Define data to use for batch correction
+Save in object `DTU` (data to use)
+```{r Data to use for batch correction}
+DTU <- ad
+```
+
+#### Assume main TFs can separate subtypes
+The main transcription factors (TF) that have been associated with the distinct subtypes of SCLC are:
+
+* ASCL1
+* NEUROD1
+* POU2F3
+* YAP1  
+
+We will assume the expression of these genes can be used to disinguish the subtypes and that the source of the data (CCLE vs Minna) is an adjustment variable. 
+```{r}
+anpy <- c("ASCL1","NEUROD1","POU2F3","YAP1")
+```
+
+#### Make data.frame of temporary subtypes
+Use the ANPY TF that is most highly expressed in each cell line as the subtype.
+
+```{r}
+# if any NEUROD1 data are NA, use NEUROD2 in place of NEUROD1 (e.g. GDSC data)
+getSubtype <- function(ids,dat=DTU) {
+    nd1 <- dat["NEUROD1",]
+    nd2 <- sapply(seq_along(dat["NEUROD1",]), function(i) 
+        ifelse(is.na(dat["NEUROD1",i]), dat["NEUROD2",i],dat["NEUROD1",i]))
+    if(anyNA(nd1)) dat["NEUROD1",] <- nd2
+    sapply(ids, function(x) {
+        out <- anpy[dat[anpy,x] == max(dat[anpy,x], na.rm=TRUE)]
+        out[!is.na(out)]
+    })
+}
+
+getCellLine <- function(x) gsub("^[cmS]\\.","",x)
+getSource <- function(x) switch(substr(x,1,1),
+                                c="CCLE",
+                                m="Minna",
+                                S="tumor",
+                                NA)
+
+phen <- data.frame(subtype=getSubtype(colnames(DTU)),
+                   cell.line=getCellLine(colnames(DTU)),
+                   source=sapply(colnames(DTU), getSource)
+                   )
+```
+
+#### Before correction
+```{r}
+matdensity(as.matrix(DTU), groupFactor=substr(colnames(DTU),1,1))
+```
+
+#### Remove batch effects using Surrogate Variable Analysis
+The Bioconductor package `sva` can be used to directly remove batch effects using a Bayesian approach, `ComBat` (Johnson et al. 2007 Biostatistics). The `sva` package assumes there are two types of variables that are being considered:  
+
+#. Adjustment variables 
+#. Variables of interest
+
+Two model matrices must be made: the “full model” and the “null model”. The null model is a model matrix that includes terms for all of the adjustment variables but not the variables of interest. The full model includes terms for both the adjustment variables and the variables of interest.
+
+The model matrices can be created using the `model.matrix` function.
+
+```{r}
+mod <- model.matrix(~ cell.line, phen)
+mod0 <- model.matrix(~ 1, phen)
+```
+
+If the `sva` function is called without the _n.sv_ argument specified, the number of factors will be estimated. The number of factors can also be estimated using the `num.sv` function.
+
+The `sva` function returns a list with four components, `sv`, `pprob.gam`, `pprob.b`, `n.sv`.  
+
+* `sv` is a matrix whose columns correspond to the estimated surrogate variables.  
+* `pprob.gam` is the posterior probability that each gene is associated with one or more latent variables.  
+* `pprob.b` is the posterior probability that each gene is associated with the variables of interest.  
+* `n.sv` is the number of surrogate variables estimated by the sva.
+
+
+
+```{r}
+library(limma)
+# data for correction; must remove genes containing any NA values
+# Use CCLE/Minna data
+dfc <- DTU[!apply(DTU,1,function(x) any(is.na(x))),]
+
+# Choose method for determining the number of surrogate variables
+# n.sv <- num.sv(dfc, mod, method="leek")
+# n.sv <- num.sv(dfc, mod, method="be")
+
+# make a surrogate variable object
+svobj <- sva(as.matrix(dfc), mod, mod0)
+
+# plot it
+plot(svobj$sv, pch=19)
+
+modSv = cbind(mod,svobj$sv)
+mod0Sv = cbind(mod0,svobj$sv)
+fit = lmFit(dfc,modSv)
+
+# make a frozen surrogate variable object (i.e. batch-corrected)
+fsvobj <- fsva(as.matrix(dfc), mod, svobj, newdat=as.matrix(dfc))
+#
+
+# batch-corrected data
+bc <- fsvobj$new
+plot(fsvobj$newsv, pch=19)
+
+bc2 <- ComBat(as.matrix(dfc), batch=substr(colnames(dfc),1,1), mod = mod0,ref.batch = 'm')
+
+bc2_mean.only <- ComBat(as.matrix(dfc), batch=substr(colnames(dfc),1,1), mod = mod0,mean.only = TRUE)
+# write.csv(bc2, file="../data/CCLE_Minna_Thomas_COMBAT.csv")
+```
+#### Save batch correction surrogate variables
+Save only for CCLE/Minna data to be used to include data from genes missing from GDSC data.
+```{r Save batch correction surrogate variables, eval=FALSE, include=FALSE}
+save(svobj, file="./int/SCLC_SVA_obj.Rdata")
+save(fsvobj, file="./int/SCLC_Frozen_SVA_obj.Rdata")
+```
+
+
+#### After correction
+```{r}
+matdensity(bc, main="Batch corrected", xlab="log2 expression", ylab="density",
+           groupFactor=substr(colnames(bc2),1,1))
+legend("topright",legend=c("CCLE","Minna","Tumor"), col=RColorBrewer::brewer.pal(8, "Dark2")[1:3], lwd=2)
+
+matdensity(bc2, main="Batch corrected", xlab="log2 expression", ylab="density",
+           groupFactor=substr(colnames(bc2),1,1))
+legend("topright",legend=c("CCLE","Minna","Tumor"), col=RColorBrewer::brewer.pal(8, "Dark2")[1:3], lwd=2)
+
+matdensity(bc2_mean.only, main="Batch corrected", xlab="log2 expression", ylab="density",
+           groupFactor=substr(colnames(bc2),1,1))
+legend("topright",legend=c("CCLE","Minna","Tumor"), col=RColorBrewer::brewer.pal(8, "Dark2")[1:3], lwd=2)
+```
+```{r}
+write.csv(bc2, file = "../../data/bulk-rna-seq/CCLE_Minna_Thomas_COMBAT.csv")
+
+```
+
+
+<!-- ### Identify highly variable genes -->
+<!-- For best clustering, should identify highly variable genes. Use batch-corrected CCLE and Minna data to define these genes. First, raise all values < 0 to 0 to remove the presumably meaningless differences. -->
+<!-- (The values may not reflect actual gene expression levels--may be within the noise.)   -->
+
+<!-- Refer to this metric as 'gene variation' and store in object `gv` and genes with a range greater than 3 will be considered varying genes and stored in `vargenes`. **NOTE** Some values in CCLE data are very low (negative values) which make range when comparing to values in GDSC or Minna data inappropriately large; must remove genes in `lowgenes` from those in `vargenes`.   -->
+
+<!-- This approach is more likely to identify genes such as POU2F3 with a very large difference in expression in only a small subset of the samples that would be missed if using a summary statistic like coefficient of variation that takes into account the total number of samples. -->
+
+<!-- ```{r Vargenes} -->
+<!-- x <- bc2 -->
+<!-- gv <- apply(x, 1, function(x) diff(range(x,na.rm=TRUE))) -->
+<!-- vargenes <- names(gv[gv > log2(20)]) -->
+<!-- write.csv(x[vargenes,], file = "../data/CCLE_Minna_COMBAT_vargenes.csv") -->
+
+<!-- x <- bc2_mean.only -->
+<!-- gv <- apply(x, 1, function(x) diff(range(x,na.rm=TRUE))) -->
+<!-- vargenes <- names(gv[gv > log2(20)]) -->
+<!-- write.csv(x[vargenes,], file = "../data/CCLE_Minna_COMBAT_vargenes_mean_only.csv") -->
+
+<!-- ``` -->
+
+# Clustering C and M datasets
+
+#### Heatmap using 1-Spearman coeff as distance
+```{r Heatmap vargenes, fig.height=8, fig.width=8}
+# pdf(file="../figures/hm_temp_vargenes.pdf", height=8, width=8)
+data <- '../data/SCLC_combined_Minna_CCLE_batch_corrected_wo_lowgenes.csv'
+x <- read.csv(data, header = TRUE, sep = ',', row.names = 1)
+x <- as.matrix(x)
+hm <- heatmap(x,
+        keep.dendro = TRUE,
+        col=bluered(20),
+        distfun = function(x) as.dist(1-cor(t(x), method='spearman')),
+        cexRow=0.25, cexCol=0.25
+        )
+# dev.off()
+```
+
+#### Extract dendrogram from heatmap
+```{r Dendrogram, fig.height=6, fig.width=8}
+#pdf(file="./figures/no_lowgenes_hc_spearman.pdf", height=8, width=8)
+hm.dend <-  as.dendrogram(hm[['Colv']])
+nodePar <- list(lab.cex = 0.25, pch = c(NA, 19),
+                cex = 0.25, col = "blue")
+# pdf(file="../figures/supplement/hc_cline_tumors_all_genes.pdf", height=8, width=8)
+
+#plot(hm.dend,  nodePar = nodePar, horiz = TRUE, xlim=c(0.7,0))
+sd <- hm.dend
+#dev.off()
+```
+```{r}
+data_labels <-'/Users/smgroves/Documents/MATLAB/particode/Data/combined_clusters_2020-05-27-MC copy.csv'
+
+# data_labels <-'../data/combined_clusters.csv'
+labels <- read.csv(data_labels, header = TRUE, sep = ',', row.names = 1)
+labels <- labels[row.names(xt),]
+colors_to_use <- as.numeric(xt$ASCL1)
+colors_to_use <- colors_to_use[order.dendrogram(hm.dend)]
+pdf(file="./figures/dend_ASCL1.pdf", height=20, width=40)
+
+barplot(colors_to_use, names.arg = rownames(labels)[order.dendrogram(hm.dend)],las = 2)
+dev.off()
+labels_colors(hm.dend) <- colors_to_use
+pdf(file="./figures/no_lowgenes_hc_NEUROD1.pdf", height=20, width=20)
+nodePar <- list(lab.cex = 0.25, pch = c(NA, 19),
+                cex = 0.25, col = "blue")
+plot(hm.dend,  nodePar = nodePar, horiz = TRUE, xlim=c(0.5,0))
+dev.off()
+
+```
+
+
+#### Assign colors to branches.
+Keeping multiple copies of this code chunk specific to each subset of source data and genes to avoid retyping if/when clustering order changes. Must manually run these as they are set to not run (`eval=FALSE`).
+
+
+#### Compare to prior clustering
+```{r}
+subt_v2 <- read.csv('../data/combined_clusters_2020-04-28.csv',as.is=TRUE, row.names=1)
+# subt_v3 <- read.csv('../data/combined_clusters_2020-05-27.csv',as.is=TRUE, row.names=1)
+mysubt$subtype_v2 <- subt_v2[rownames(mysubt),"subtype"]
+mysubt$subtype_v3 <- subt_v3[rownames(mysubt),"subtype"]
+```
+
+#### Test PlotByPhen on new clustering
+*Note that the statistical tests are biased in these graphs due to overrepresentation of cell lines with samples in more than one datset. Those data should be averaged across the datasets to obtain a single value for each cell line.*  
+
+First load function and necessary data (need an object names `clusters` with phenotype data in it).
+```{r plotByPhen}
+source('/Users/smgroves/Documents/Github/SCLC/RNA-seq/code/ShinyApps/plotByPhenShiny/PlotByPhen.r', chdir = TRUE)
+clusters <- mysubt
+clusters$nphenotype <- clusters$phenotype <- mysubt$subtype
+```
+
+Examine expression patterns of TFs.
+```{r TF by subtype}
+TF_genes_to_test <- c("ASCL1","NEUROD1","YAP1","POU2F3","ELF3","ISL1","INSM1","MYC","MYCL","DLX5",
+                      "NOTCH1","NOTCH2","HES1","REST","NR0B2","SMAD3","NKX2-1","NEUROD2")
+
+invisible(sapply(TF_genes_to_test, function(x) plotByPhen(x, dat=bc)))
+```
+
+Examine expression patterns of other genes (e.g. NE markers and genes thought to be involved in lung development).
+```{r}
+other_genes_to_test <- c("CALCA","SEC11C","DLL3","NCAM1","FGFR1","RET","BCL2","GRP","SCNN1A","CEACAM5")
+
+invisible(sapply(other_genes_to_test, function(x) plotByPhen(x, dat=bc)))
+```
+
+#### Save normalized data to file
+```{r Save batch-corrected data to file, eval=FALSE}
+write.csv(bc, file="../data/SCLC_CCLE_Minna_Thomas_allgenes.csv")
+write.csv(clusters, file="../data/combined_clusters.csv")
+write.csv(data.frame(vargenes=vargenes), file="../data/variable_genes.csv", row.names=FALSE)
+```
+
+
+
+### Batch correct only RNA-seq data
+Since microarray data are missing many genes, some analyses should be performed using only RNA-seq data. These data still require batch correction.
+```{r}
+# data for correction; must remove genes containing any NA values
+# Use CCLE/Minna data
+dfc_cm <- cm[!apply(cm,1,function(x) any(is.na(x))),]
+phen_cm <- data.frame(subtype=getSubtype(colnames(dfc_cm), dat=dfc_cm),
+                   cell.line=getCellLine(colnames(dfc_cm)),
+                   source=sapply(colnames(dfc_cm), getSource)
+                   )
+mod_cm <- model.matrix(~ cell.line, phen_cm)
+bc_cm <- ComBat(as.matrix(dfc_cm), batch=substr(colnames(dfc_cm),1,1), mod=mod_cm)
+```
+
+#### After correction
+```{r}
+matdensity(bc_cm, main="Batch corrected", xlab="log2 expression", ylab="density",
+           groupFactor=substr(colnames(bc_cm),1,1))
+legend("topright",legend=c("CCLE","Minna"), col=RColorBrewer::brewer.pal(8, "Dark2")[1:2], lwd=2)
+```
+
+#### Save batch correction data
+Save only for CCLE/Minna data to be used to include data from genes missing from GDSC data.
+```{r Save batch-corrected CM data, eval=FALSE, include=FALSE}
+write.csv(bc_cm, file="../data/SCLC_CCLE_Minna_RNA-seq_batch-corrected_geneexp.csv")
+
+```
+
+#### Identify genes that are highly expressed and not different across subtypes
+```{r}
+lmp <- function (modelobject) {
+    if (class(modelobject) != "lm") stop("Not an object of class 'lm' ")
+    f <- summary(modelobject)$fstatistic
+    p <- pf(f[1],f[2],f[3],lower.tail=F)
+    attributes(p) <- NULL
+    return(p)
+}
+
+ctrl_genes <- character()
+he <- bc_cm[apply(bc_cm,1, function(x) all(x>5)),]
+he <- he[,rownames(clusters)[!grepl("^g",rownames(clusters))]]
+subt <- clusters[!grepl("^g",rownames(clusters)),"subtype"]
+the <- cbind(data.frame(subtype=subt),t(he))
+heg <- colnames(the)[-1]
+m <- sapply(heg, function(gene) {
+    mymod <- formula(paste(gene,"~ subtype"))
+    lmp(lm(mymod, dat=the))
+})
+
+ctrl_genes <- names(sort(m[m>0.2],decreasing=TRUE))
+```
+#### Write control genes to file
+```{r}
+write.csv(data.frame(control_gene=ctrl_genes), file="../data/control_genes.csv", row.names=FALSE)
+```
+
