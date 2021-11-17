@@ -128,17 +128,19 @@ getSubtype <- function(ids,dat=DTU) {
     })
 }
 
-getCellLine <- function(x) gsub("^[cmS]\\.","",x)
+getCellLine <- function(x) gsub("^[cmt]\\.","",x)
 getSource <- function(x) switch(substr(x,1,1),
                                 c="CCLE",
                                 m="Minna",
-                                S="tumor",
+                                t="tumor",
                                 NA)
 
 phen <- data.frame(subtype=getSubtype(colnames(DTU)),
                    cell.line=getCellLine(colnames(DTU)),
                    source=sapply(colnames(DTU), getSource)
                    )
+
+write.csv(phen, "../../data/bulk-rna-seq/Metadata_CCLE_Minna_Thomas_COMBAT.csv")
 ```
 
 #### Before correction
