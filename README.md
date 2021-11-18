@@ -23,15 +23,11 @@ Code and figures related to Groves et al. submitted to Cell Systems 2021
         - `combined-data` : contains code and results from ParTI for different numbers of archetypes on combined bulk RNA-seq dataset from `notebooks/bulk/Cell-line-tumor-batch-correction-and-clustering.Rmd`, using the file `data/bulk-rna-seq/parti-input/CCLE_Minna_Thomas_COMBAT_no_names.csv`. Same file structure as `human-cell-lines`. 
     - `bulk`
         - `int` : contains intermediary files that were saved for antiquity but are not used in any scripts.
-        - `Bulk-Archetype-Tasks.ipynb`
-        - `Cell-line-tumor-batch-correction-and-clustering.html`
-        - `Cell-line-tumor-batch-correction-and-clustering.nb.html`
-        - `Cell-line-tumor-batch-correction-and-clustering.Rmd`
-        - `Compare_cell_lines_tumors_archetypes.nb.html`
-        - `Compare_cell_lines_tumors_archetypes.Rmd`
-        - `SCLC RNA-seq batch correction-CCLE-Minna.nb.html`
-        - `SCLC RNA-seq batch correction-CCLE-Minna.Rmd`
-        - `Thomas-Tumors-Bulk-Archetypes.ipynb`
+        - `Bulk-Archetype-Tasks.ipynb` : plots related to the inferred tasks for each archetype. This analysis shows **N is enriched in axonogenesis genes and migration, A may correspond to TPCs, and Y corresponds to transit-amplifying PNECs.**
+        - `SCLC RNA-seq batch correction-CCLE-Minna.Rmd` : batch corrects CCLE and Minna data, as used in the manuscript.
+        - `Cell-line-tumor-batch-correction-and-clustering.Rmd` : batch corrects CCLE, Minna, and Tumor datasets. This analysis is used for ParTI on cell lines and tumors combined.
+        - `Compare_cell_lines_tumors_archetypes.Rmd` : comparing cell line archetypes to combined dataset archetypes.
+        - `Thomas-Tumors-Bulk-Archetypes.ipynb` : comparing the bulk RNA-seq from 81 human tumors to the original five archetypes in the manuscript (from cell line data). This analysis shows that **tumor samples are encompassed within the cell line archetype space, and tumor data alone shows more variation in ribosomal proteins than cell lines which may not be phenotypically relevant.** 
     - `single-cell`
 - `ParTI` : ParTI package code, which is used in `notebooks/ParTI-code`.
 - `R_code` : R code from Darren Tyson
