@@ -1,0 +1,23 @@
+producer_class	xtools.gsea.GseaPreranked
+producer_timestamp	1637180736193
+param	rpt_label	RPM_fit_ranked
+param	rnd_seed	timestamp
+param	set_min	15
+param	zip_report	true
+param	create_svgs	false
+param	scoring_scheme	classic
+param	rnk	/opt/gpcloud/gp_home/users/sarahmaddoxgroves/uploads/tmp/run8655667719776079378.tmp/rpm_FL_noheader_caps.rnk
+param	norm	meandiv
+param	out	/opt/gpcloud/gp_home/jobResults/392621/.tmp_gsea/analysis
+param	mode	Max_probe
+param	include_only_symbols	true
+param	help	false
+param	set_max	500
+param	gmx	/opt/gpcloud/gp_home/users/sarahmaddoxgroves/uploads/tmp/external/gpftp.broadinstitute.org/module_support_files/msigdb/gmt/c5.go.bp.v7.4.symbols.gmt,/opt/gpcloud/gp_home/users/sarahmaddoxgroves/uploads/tmp/external/gpftp.broadinstitute.org/module_support_files/msigdb/gmt/h.all.v7.4.symbols.gmt
+param	make_sets	false
+param	plot_top_x	10
+param	gui	false
+param	nperm	1000
+param	collapse	No_Collapse
+
+file	.tmp_gsea/analysis/index.html
