@@ -1,0 +1,396 @@
+---
+title: "SCLC RNA-seq Batch Correction"
+output: 
+    html_notebook:
+        self_contained: yes
+
+---
+
+```{r Setup, include=FALSE}
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# 
+# BiocManager::install("preprocessCore")
+# BiocManager::install("quantro")
+# BiocManager::install("MineICA")
+# BiocManager::install("KEGG.db")
+# BiocManager::install("RUVSeq")
+# BiocManager::install("BatchQC")
+# BiocManager::install("sva")
+# These packages are needed if accessing raw data files on vu1file
+# library(RUVSeq)
+# library(fst)                    # needed for read.fst
+# library(rtracklayer)            # needed for readGFF if reading in fst files
+# source('fsqn.R')
+# library(preprocessCore)         # has normalize.quantiles function
+# library(BatchQC)
+
+# These packages are required for all processing
+library(quantro)
+library(sva)
+
+chooseDir <- function(caption = 'Select data directory',
+                      def = '~/Desktop')
+{
+    tryCatch(
+        {
+            message('Trying RStudio api selectDirectory')
+            rstudioapi::selectDirectory(
+                caption = caption)
+        }, error=function(cond)
+        {
+            message(paste('Could not find function for \
+                          choosing save location; \
+                          using',def))
+            return(def)
+        }
+    )
+}
+
+cleanCCLEdata <- function(z, 
+                          clsubset='SCLC',
+                          clinfopath='../data/CCLE_Cell_lines_annotations_20181226.txt',
+                          proteincoding=gtf[gtf$gene_type=='protein_coding','gene_id'])
+{
+    clannot <- read.csv(clinfopath,sep='\t',as.is=TRUE)
+    
+    # subset only coding genes
+    z <- z[z$gene_id %in% proteincoding,]
+   
+    # obtain gene name using ENSEMBL ID
+    z$Gene <- gtf[match(z$gene_id,gtf$gene_id),'gene_name']
+
+    # remove rows with duplicate gene names
+    z <- z[!duplicated(z$Gene),] 
+    
+    # move gene names to rownames
+    rownames(z) <- z$Gene
+    
+    # remove columns not containing numeric values
+    z <- z[,sapply(colnames(z), function(cn) class(z[,cn])=='numeric')]
+
+    # order by gene name (rownames)
+    z <- z[order(rownames(z)),] 
+    
+        if(clsubset=='SCLC')
+    {
+        cln <- clannot[clannot$tcga_code=='SCLC' & !is.na(clannot$tcga_code),'CCLE_ID']
+        z <- z[,colnames(z) %in% cln]
+    } else {
+        # will subset based on clsubset matching any substring in any column name
+        if(any(grepl(clsubset,colnames(z))))
+            z <- z[,grepl(clsubset,colnames(z))]
+    }
+
+    # remove tissue site info from cell line name (column names)
+    colnames(z) <- sapply(colnames(z), function(x) strsplit(x,'_')[[1]][1])
+
+    # leave "NCI" designation to maintain consistency across datasets
+    # colnames(z) <- gsub('^NCI','',colnames(z))
+
+    z <- as.matrix(z, rownames=TRUE)
+
+    # values are estimated transcript abundance. Since these values will be     
+    # put data in log2 scale; must first set values < 1 to 1
+    # z[z==0] <- min(z[z!=0])
+    # z <- log2(z)
+    # z[z < -2] <- 0
+
+    return(z+1)
+}
+
+cleanMinnaData <- function(z)
+{
+    # remove first column (GENE_ID)
+    z <- z[,-1]
+    # move gene names (COMMON) to rownames and remove column
+    rownames(z) <- z[,1]
+    z <- z[,-1]
+    # remove cell lines with all NAs
+    z <- z[,!apply(z,2,function(x) all(is.na(x)))]
+    # remove gene with all NAs
+    z <- z[!apply(z,1,function(x) all(is.na(x))),]
+    # remove mitochondrial genes
+    z <- z[!grepl('^MT-',rownames(z)),]
+    
+    # remove periods from cell line names (colnames)
+    colnames(z) <- gsub('.','',colnames(z),fixed=TRUE)
+    
+    # Add "NCI" in front of H-designation cell lines to match other datasets
+    colnames(z)[grepl('^H[1-9]',colnames(z))] <-  
+        paste0('NCI',colnames(z)[grepl('^H[1-9]',colnames(z))])
+  
+    # NOTE: rounding will cause some data loss
+    return(round(2^z,4))
+}
+
+
+cleanGDSCdata <- function(z, 
+                          clinfopath='../data/GDSC_Cell_Lines_Details.xlsx', 
+                          geneinfopath="../data/ENSEMBL-GENE_ID_Table.txt",
+                          clsubset='SCLC')
+{
+    # NOTE: colnames are COSMIC IDs for cell lines
+    # must match using annotation file from GDSC
+    clinfo <- read_xlsx(clinfopath)
+    cn <- colnames(clinfo)
+    cn <- gsub('\r\n', ' ', cn, fixed=TRUE)
+    cn <- gsub('  ', ' ', cn)
+    colnames(clinfo) <- cn
+    clinfo <- as.data.frame(clinfo)
+    clinfo$cell.line <- gsub('-','',toupper(clinfo$"Sample Name"))
+    # leave "NCI" prefix on Minna cell lines for consistency with other data
+    # clinfo$cell.line <- gsub('^NCI','',clinfo$cell.line)
+    
+    lungcl <- clinfo[
+        grep('[lL]ung',clinfo[,'GDSC Tissue descriptor 2']),
+        'cell.line']
+    sclccl <- clinfo[grep('small',clinfo[,'GDSC Tissue descriptor 2']),
+                     'cell.line']
+
+    # move gene names to rownames and remove column
+    rownames(z) <- z[,1]
+    z <- z[,-1]
+    # remove cell lines with all NAs
+    z <- z[,!apply(z,2,function(x) all(is.na(x)))]
+    # remove gene with all NAs
+    z <- z[!apply(z,1,function(x) all(is.na(x))),]
+    # remove mitochondrial genes
+    z <- z[!grepl('^MT-',rownames(z)),]
+
+    geneinfo <- read.csv(geneinfopath,sep='\t')
+    gn <- sapply(rownames(z), function(x)
+        geneinfo[match(x,geneinfo$Ensembl.gene.ID),'Approved.symbol'])
+
+    # remove genes without gene name
+    z <- z[!is.na(gn),]
+    rownames(z) <- gn[!is.na(gn)]
+    
+    clname <- sapply(colnames(z), function(x) 
+        clinfo[match(gsub('^X','',x),clinfo$'COSMIC identifier'),'cell.line'])
+    colnames(z) <- clname
+
+    # return subset of data based on value of clsubset; default is "SCLC"
+    if(clsubset == 'SCLC')
+    {
+        return(z[,colnames(z) %in% sclccl])
+    } else if (clsubset == 'lung'){
+        return(z[,colnames(z) %in% lungcl])
+    } else {
+        return(z)
+    }
+}
+
+```
+
+### Make new combined dataset of CCLE and Minna data
+The raw CCLE data is in estimated transcript abundace (linear scale) whereas the Minna data have already been converted to log scale. To best remove the differences between these datasets that is due technical variation we will use Surrogate Variable Analysis (`SVA`), which is a common way to do this for RNA-seq data.  
+
+We want to use the CCLE and Minna RNA-seq datasets only since the GDSC data is from microarray and would likely have a significantly different type/amount of technical variation.
+  
+Since we are interested in identifying genes that distinguish the subtypes/phenotypes we will make two models, one containing the subtypes and one without (nested models) to identify features that are not attributable to differences in phenotypes.
+  
+First, we will load both datasets.
+```{r Load data}
+cfstpath <- file.path('/mnt/vu1file/Data/RNAseq/CCLE (all data)/CCLE_RNAseq_rsem_genes_tpm_20180929.txt.fst')
+
+gtf <- readGFF("/mnt/vu1file/Data/RNAseq/CCLE (all data)/gencode.v19.genes.v7_model.patched_contigs.gtf.gz", version=2L)
+# keep only coding genes
+gtf <- gtf[gtf$gene_type=='protein_coding',]
+
+d <- read.fst(cfstpath)
+# clean CCLE data
+d <- cleanCCLEdata(d)
+
+# load Minna data
+m <- read.csv(file.path('../data/cBioPortal_data_Minna_mRNA-seq.csv'),as.is=TRUE)
+m <- cleanMinnaData(m)
+
+commongenes <- intersect(rownames(d),rownames(m))
+
+# CCLE data
+ctemp <- as.data.frame(d)
+colnames(ctemp) <- paste0('c.',colnames(ctemp))
+
+# Minna data
+mtemp <- m
+colnames(mtemp) <- paste0('m.',colnames(mtemp))
+
+# combine all data, using only common genes
+ad <- do.call(cbind, list(mtemp[commongenes,],ctemp[commongenes,]))
+
+# # load variable genes used for clustering (determined previously)
+# vargenes <- read.csv(file='../data/variable_genes.csv',as.is=TRUE)[,1]
+# 
+# # remove genes from vargenes not present in data
+# vargenes <- vargenes[vargenes %in% rownames(ad)]
+# 
+# # find genes where values across all samples are < 2
+lowgenes <- rownames(ad)[apply(ad, 1, function(x) all(x<2))]
+
+
+# # save gene expression values of only variable genes in linear and log2 scale
+# gev <- as.matrix(ad[vargenes,])
+gev <- as.matrix(ad[!rownames(ad) %in% lowgenes,])
+
+l2gev <- log2(gev)
+
+# Load subtype/clustering information
+subtype_info <- read.csv('../data/combined_clusters.csv',as.is=TRUE, row.names=1)
+phen <- subtype_info[colnames(ad),c('cell.line','source','id','phenotype')]
+```
+
+First, examine histograms of gene expression values from each dataset.
+
+```{r}
+h <- lapply(c('m','c'), function(x)
+{
+    sstr <- paste0('^',x)
+    hist(l2gev[,grep(sstr,colnames(l2gev))],breaks=seq(-2,15,.1), 
+         plot=TRUE, freq = FALSE, xlab='gene exp value',
+         main=x)
+})
+
+```
+
+#### Assess differences in gene distributions
+Examine the distributions of gene expression values (by sample) across the datasets. 
+```{r}
+matdensity(l2gev,
+           groupFactor=substr(colnames(l2gev),1,1))
+```
+
+#### Detect/correct batch effects
+Can use `BatchQC` to determine/visualize batch effects. Once run, does not need to be repeated (files saved). 
+
+
+```{r Visualize batch effects, eval=FALSE, include=FALSE}
+rstudioapi::showDialog("Target directory", "Please choose a directory where any exported graphs will be saved.")
+save_dir <- file.path(paste0(chooseDir(),'/'))
+
+condition <- subtype_info[match(colnames(gev),rownames(subtype_info)),'phenotype']
+batchQC(dat=gev, batch=substr(colnames(gev),1,1), condition=condition,
+        report_file="batchqc_report.html", report_dir=save_dir,
+        report_option_binary="111111111",
+        view_report=TRUE, interactive=TRUE, batchqc_output=TRUE)
+```
+
+
+#### Remove batch effects using Surrogate Variable Analysis
+The Bioconductor package `sva` can be used to directly remove batch effects using a Bayesian approach, `ComBat` (Johnson et al. 2007 Biostatistics). The `sva` package assumes there are two types of variables that are being considered:  
+
+#. Adjustment variables 
+#. Variables of interest
+
+Two model matrices must be made: the “full model” and the “null model”. The null model is a model matrix that includes terms for all of the adjustment variables but not the variables of interest. The full model includes terms for both the adjustment variables and the variables of interest.
+
+The model matrices can be created using the `model.matrix` function.
+
+```{r}
+condition <- subtype_info[match(colnames(gev),rownames(subtype_info)),'phenotype']
+mod <- model.matrix(~ as.factor(condition), data=phen)
+mod0 <- model.matrix(~ 1, data=phen)
+```
+
+If the `sva` function is called without the _n.sv_ argument specified, the number of factors will be estimated. The number of factors can also be estimated using the `num.sv` function.
+
+The `sva` function returns a list with four components, `sv`, `pprob.gam`, `pprob.b`, `n.sv`.  
+
+* `sv` is a matrix whose columns correspond to the estimated surrogate variables.  
+* `pprob.gam` is the posterior probability that each gene is associated with one or more latent variables.  
+* `pprob.b` is the posterior probability that each gene is associated with the variables of interest.  
+* `n.sv` is the number of surrogate variables estimated by the sva.
+
+```{r}
+n.sv <- num.sv(l2gev,mod,method="leek")
+svobj <- sva(l2gev,mod,mod0,n.sv=n.sv)
+plot(svobj$sv, pch=19)
+```
+
+
+#### Generate batch-corrected data
+“Frozen” surrogate variable analysis can be used to remove latent variation in the test data set. The training data is adjusted using the calculated surrogate variables. The testing data is adjusted using the “frozen” surrogate variable algorithm. The output of the `fsva` function is an adjusted training set and an adjusted test set. Using the log2 gene expression values (`l2gev`) as both training and test data should produce "batch corrected" data as output. This will be saved in the object `l2gev_bc`.
+
+```{r}
+fsvaobj <- fsva(l2gev, mod, svobj, l2gev)
+l2gev_bc <- fsvaobj$new
+```
+
+Check batch correction using `matdensity` function.
+
+```{r}
+matdensity(l2gev_bc,
+           groupFactor=substr(colnames(l2gev_bc),1,1))
+```
+
+#### Save batch-corrected data
+To prevent having to correct the batch effects every time, the batch-corrected data will be saved to a file (`../data/SCLC_combined_Minna_CCLE_batch_corrected_vargenes.csv`). NOTE: This file does not have all genes! (limited  to the 15,950 genes not in `lowgenes`.)
+```{r}
+# write.csv(l2gev_bc,
+#           file="../data/SCLC_combined_Minna_CCLE_batch_corrected_wo_lowgenes.csv")
+```
+
+
+### Attempt to incorporate GDSC data
+The batch correction seems to have worked very well with the RNA-seq data. Let's try to do the bacth correction using all data, including the microarray data from GDSC. This code should run even without access to `vu1file`.
+```{r}
+# First load batch-corrected RNA-seq data
+l2gev_bc <- read.csv("../data/SCLC_combined_Minna_CCLE_batch_corrected_wo_lowgenes.csv", 
+                     as.is=TRUE, row.names=1)
+
+# load GDSC data from file containing all SCLC datasets
+g <- read.csv('../data/combined_CCLE_GDSC_Minna_geneexp.csv', as.is=TRUE, row.names=1)
+# keep only GDSC data
+g <- as.matrix(g[,grep("^g",colnames(g))])
+
+# subtract 3 from all values to approximate RNA-seq data
+g <- g - 2.5
+
+ccld <- as.matrix(cbind(l2gev_bc,g[rownames(l2gev_bc),]))
+
+# Load previous subtype/clustering information
+subtype_info <- read.csv('../data/combined_clusters.csv',as.is=TRUE, row.names=1)
+
+temp <- ccld[!apply(ccld,1, function(x) any(is.na(x))),]
+phen <- subtype_info[colnames(temp),c('cell.line','source','id','phenotype')]
+```
+
+
+```{r}
+condition <- subtype_info[match(colnames(temp),rownames(subtype_info)),'phenotype']
+mod <- model.matrix(~ as.factor(condition), data=phen)
+mod0 <- model.matrix(~ 1, data=phen)
+
+n.sv <- num.sv(temp,mod,method="leek")
+svobj <- sva(temp,mod,mod0,n.sv=n.sv)
+plot(svobj$sv, pch=19)
+```
+
+```{r}
+# as.matrix(z[rownames(z) %in% rownames(ccld),])
+fsvaobj <- fsva(temp, mod, svobj, temp)
+ccld_bc <- fsvaobj$new
+```
+
+Check batch correction using `matdensity` function.
+
+```{r}
+matdensity(ccld_bc,
+           groupFactor=substr(colnames(ccld_bc),1,1), xlab="log2(expression)", 
+           ylab="density")
+legend("topright", legend=c("Minna", "GDSC", "CCLE"), 
+       col=RColorBrewer::brewer.pal(8, "Dark2")[1:3], lwd=3)
+```
+
+### Compare to original
+```{r}
+matdensity(as.matrix(ccld),
+           groupFactor=substr(colnames(ccld),1,1), xlab="log2(expression)", 
+           ylab="density")
+
+```
+
+```{r}
+hist(as.matrix(z[,grep("^g",colnames(z))]))
+```
+

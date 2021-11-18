@@ -1,0 +1,5 @@
+archetype #,Feature Name,P value (Hypergeom.),Significant after Benjamini-Hochberg correction?,P maximal
+1,subtype: YAP1,4.6805e-10,1,0.99621
+2,subtype: POU2F3,0,1,1
+3,subtype: NEUROD1,1.1102e-16,1,0.99997
+5,source: tumor,0.004759,1,0.63651

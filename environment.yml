@@ -21,11 +21,10 @@ dependencies:
   - h5py
   - click
   - cellrank
+  - python-annoy
   - pip:
-    - dropkick==1.2.6
     - scanorama 
     - scrublet
     - magic-impute
-    - velocyto
 
 #scanpy and scvelo are installed with cellrank
