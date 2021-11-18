@@ -26,7 +26,7 @@ library(forcats)
 
 ```{r}
 ## Import archetype color scheme
-source("../ParTI-code/hallmarkOmeter.inc.R")
+# source("../ParTI-code/hallmarkOmeter.inc.R")
 
 ##################################################
 ## Make matrix of tissue archetypes vs super-archetypes
