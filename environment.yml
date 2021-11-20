@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - pip
-  - python=3.9.6
+  - python=3.7.6
   - jupyter=1.0.0
   - seaborn
   - anndata

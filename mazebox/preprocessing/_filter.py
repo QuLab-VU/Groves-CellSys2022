@@ -114,7 +114,7 @@ def dropkick_recipe(adatas, batch_key,
 
     # arcsinh-transform normalized counts (adata.layers["arcsinh_norm"])
     adata.X = np.arcsinh(adata.layers["norm_counts"])
-    sc.pp.scale(adata)  # scale genes for feeding into model
+    sc.pp.scale(adata)  # scale genes for feeding into model ############ If there is a discrepancy with scanpy recipe, this might be why
     adata.layers[
         "arcsinh_norm"
     ] = adata.X.copy()  # save arcsinh scaled counts in .layers
