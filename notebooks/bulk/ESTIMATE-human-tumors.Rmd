@@ -1,0 +1,25 @@
+---
+title: "ESTIMATE Immune Fraction of SCLC Human Tumors"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(utils)
+rforge <- "http://r-forge.r-project.org"
+install.packages("estimate", repos=rforge, dependencies=TRUE)
+library(estimate)
+```
+
+```{r}
+ThomasTumorExpr <- "../../data/bulk-rna-seq/thomas_tumors_tab.txt"
+
+filterCommonGenes(input.f=ThomasTumorExpr, output.f="../../data/bulk-rna-seq/Thomas_tumors.gct", id="GeneSymbol")
+
+estimateScore("../../data/bulk-rna-seq/Thomas_tumors.gct", "../../data/bulk-rna-seq/Thomas_tumors_estimate_score.gct", platform="illumina")
+
+```
+
