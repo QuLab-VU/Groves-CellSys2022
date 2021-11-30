@@ -29,6 +29,9 @@ Code and figures related to Groves et al. submitted to Cell Systems 2021
         - `Compare_cell_lines_tumors_archetypes.Rmd` : comparing cell line archetypes to combined dataset archetypes.
         - `Thomas-Tumors-Bulk-Archetypes.ipynb` : comparing the bulk RNA-seq from 81 human tumors to the original five archetypes in the manuscript (from cell line data). This analysis shows that **tumor samples are encompassed within the cell line archetype space, and tumor data alone shows more variation in ribosomal proteins than cell lines which may not be phenotypically relevant.** 
     - `single-cell`
+        - `Human_cell_lines.ipynb`
+        - `RPM_tumors.ipynb`
+        - `RPM_tumors-CR.ipynb`: using CellRank on RPM time series and tumor data
 - `ParTI` : ParTI package code, which is used in `notebooks/ParTI-code`.
 - `R_code` : R code from Darren Tyson
 - `environment.yml` : conda environment 
