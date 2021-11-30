@@ -1,0 +1,9 @@
+archetype #,Feature Name,P value (Hypergeom.),Significant after Benjamini-Hochberg correction?,P maximal
+1,NEW 10 2020: Y,5.1336e-09,1,0.99637
+1,10 08 2020: Y,5.1336e-09,1,0.99637
+1,subtype: Y,1.0239e-07,1,0.98788
+2,NEW 10 2020: N,1.425e-06,1,0.67576
+2,10 08 2020: N,5.8148e-06,1,0.91723
+3,10 08 2020: A2,1.6489e-09,1,0.98033
+3,NEW 10 2020: A2,2.8855e-09,1,0.98016
+3,subtype: A2,4.0658e-08,1,0.96251
