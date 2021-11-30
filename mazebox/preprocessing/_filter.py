@@ -5,14 +5,16 @@ import scanpy as sc
 import numpy as np
 import scrublet
 
-def dropkick_filter(adata, verbose = False, plot = True):
+def dropkick_filter(adata, filter = True, verbose = False, plot = True):
     adata_rc = dk.dropkick(adata, n_jobs=4, verbose=verbose)
     if plot:
         dk.qc_summary(adata)
-    adata = adata[(adata.obs.dropkick_label == 1), :].copy()
+    if filter:
+        adata = adata[(adata.obs.dropkick_label == 1), :].copy()
     return adata
 
 def dropkick_recipe(adatas, batch_key,
+                    filter = True,
                     plot = True,
                     write = False,
                     fname = '',
@@ -27,17 +29,21 @@ def dropkick_recipe(adatas, batch_key,
                     target_sum=None,
                     X_final = 'arcsinh_norm'
                     ):
+    print('Running dropkick on each sample and filtering...')
     if len(adatas) == 1:
         adata = adatas[0]
         adata_rc = dk.dropkick(adata, n_jobs=4, verbose = verbose)
         if plot:
             dk.qc_summary(adata)
-        adata = adata[(adata.obs.dropkick_label==1),:].copy()
+        if filter:
+            adata = adata[(adata.obs.dropkick_label==1),:].copy()
     else:
-        adatas = [dropkick_filter(adata, verbose = verbose, plot = plot) for adata in adatas]
+        adatas = [dropkick_filter(adata, verbose = verbose, plot = plot, filter = filter) for adata in adatas]
         a1 = adatas.pop(0)
         adata = a1.concatenate(adatas, batch_key=batch_key, batch_categories=batch_categories)
-
+        print(adata)
+    
+    print("Filtering and normalizing concatenated data...")
     # remove cells and genes with zero total counts
     orig_shape = adata.shape
 
@@ -61,7 +67,7 @@ def dropkick_recipe(adatas, batch_key,
                 )
             )
     adata.obs.drop(columns=["n_genes"], inplace=True)
-
+    print(adata)
 
 
     # identify mitochondrial genes
@@ -100,21 +106,9 @@ def dropkick_recipe(adatas, batch_key,
     sc.pp.normalize_total(adata, target_sum=target_sum, layers=None, layer_norm=None)
     adata.layers["norm_counts"] = adata.X.copy()
 
-    # HVGs
-    if n_hvgs is not None:
-        if verbose:
-            print("Determining {} highly variable genes".format(n_hvgs))
-        # log1p transform for HVGs (adata.layers["log1p_norm"])
-        sc.pp.log1p(adata)
-        adata.layers["log1p_norm"] = adata.X.copy()  # save to .layers
-        sc.pp.highly_variable_genes(
-            adata, n_top_genes=n_hvgs, n_bins=20, flavor="seurat"
-        )
-        adata.var.drop(columns=["dispersions", "dispersions_norm"], inplace=True)
-
     # arcsinh-transform normalized counts (adata.layers["arcsinh_norm"])
     adata.X = np.arcsinh(adata.layers["norm_counts"])
-    sc.pp.scale(adata)  # scale genes for feeding into model ############ If there is a discrepancy with scanpy recipe, this might be why
+    sc.pp.scale(adata)  # scale genes for feeding into model 
     adata.layers[
         "arcsinh_norm"
     ] = adata.X.copy()  # save arcsinh scaled counts in .layers
@@ -124,6 +118,18 @@ def dropkick_recipe(adatas, batch_key,
     adata.layers[
         "log1p_norm"
     ] = adata.X.copy()  # save log1p scaled counts in .layers
+    
+    # HVGs
+    if n_hvgs is not None:
+        if verbose:
+            print("Determining {} highly variable genes".format(n_hvgs))
+        # log1p transform for HVGs (adata.layers["log1p_norm"])
+        # sc.pp.log1p(adata)
+        # adata.layers["log1p_norm"] = adata.X.copy()  # save to .layers
+        sc.pp.highly_variable_genes(
+            adata, n_top_genes=n_hvgs, n_bins=20, flavor="seurat"
+        )
+        adata.var.drop(columns=["dispersions", "dispersions_norm"], inplace=True)
 
     # remove unneeded stuff
     del adata.layers["norm_counts"]

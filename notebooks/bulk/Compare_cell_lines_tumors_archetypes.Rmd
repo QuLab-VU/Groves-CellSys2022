@@ -170,7 +170,7 @@ SAmappingTumor <- # iterate over tissue archetypes
 ```{r}
 # 4 and 6 Cell line archetypes vs 5
 # Read in significant enrichment for "Super Archetypes" (CMT data)
-SAMSig <- read.csv("../ParTI-code/combined-data/out/5/100473_continuous_significant.csv")
+SAMSig <- read.csv("../ParTI-code/human-cell-lines/out/6/729612_continuous_significant.csv")
 SAMSig <- SAMSig %>% dplyr::filter(Mean.Difference > 0.1)
 
 
@@ -193,7 +193,7 @@ featsUniv <- dplyr::union(SAMSig %>% dplyr::select("Feature.Name"),
                    arcsMSig %>% dplyr::select("Feature.Name"))
 
 arcIdx <- 1;
-SAmapping <- # iterate over tissue archetypes
+SAmapping_clines56 <- # iterate over tissue archetypes
             map(unlist(arcsMSig %>% dplyr::select(archetype..) %>% unique), function(arcIdx) {
                 SAidx <- 1;
                 arcScores <- # iterate over super-archetypes
@@ -242,59 +242,134 @@ SAmapping <- # iterate over tissue archetypes
                     rename("univArch"=rowname)
                 return(arcScoresT)
             })
+save.image("~/Documents/Github/Groves-CellSys2021/notebooks/ParTI-code/SAmapping_clines56.Rdata")
+
+SAMSig <- read.csv("../ParTI-code/human-cell-lines/out/4/743683/743683_continuous_significant.csv")
+SAMSig <- SAMSig %>% dplyr::filter(Mean.Difference > 0.1)
+
+
+# # This makes a list of all of the archetypes (# and p value) for each dataset, and makes a list of files, one enrichment file per dataset. This is unnecessary for us to do
+# cancerIDs <-
+#     read_tsv("../TCGA_frac_nArchs.tab", col_names=F) %>% .[,1] %>%
+#     unlist %>% as.character %>%
+#     setdiff(c("HNSC", "LUAD", "BRCA"))
+# arcsMSigFiles <-
+#     c(paste("../", cancerIDs,
+#             "_UCSC/MSigDBenrichment_continuous_significant.csv",
+#             sep=""),
+#       "~/work/cancerTaskAtlas/brca_metabric/MSigDBenrichment_continuous_significant.csv")
+# cancerIDs <- c(cancerIDs, "BRCA")
+# cbind(cancerIDs, arcsMSigFiles)
+
+arcsMSig <-read.csv('../ParTI-code/human-cell-lines/out/5/322234/322234_continuous_significant.csv') %>%
+            dplyr::filter(Mean.Difference > 0.1)
+featsUniv <- dplyr::union(SAMSig %>% dplyr::select("Feature.Name"),
+                   arcsMSig %>% dplyr::select("Feature.Name"))
+
+arcIdx <- 1;
+SAmapping_clines45 <- # iterate over tissue archetypes
+            map(unlist(arcsMSig %>% dplyr::select(archetype..) %>% unique), function(arcIdx) {
+                SAidx <- 1;
+                arcScores <- # iterate over super-archetypes
+                    map(unlist(SAMSig %>% dplyr::select(archetype..) %>% unique),
+                        function(SAidx) {
+                            SAfeats <- SAMSig %>%
+                                dplyr::filter(archetype.. == SAidx) %>%
+                                dplyr::select(Feature.Name)
+                            arcFeats <- arcsMSig %>%
+                                dplyr::filter(archetype.. == arcIdx) %>%
+                                dplyr::select(Feature.Name)
+                            ## nrow(SAfeats)
+                            ## nrow(arcFeats)
+                            
+                            expIntersect <- nrow(SAfeats) * nrow(arcFeats) / nrow(featsUniv)
+                            ## phyper(q, m, n, k, lower.tail = TRUE, log.p = FALSE)
+                            ## q,x: number of white balls drawn without
+                            ## replacement from an urn which contains
+                            ## both black and white balls.
+                            ## m: the number of white balls in the urn.
+                            ## n: the number of black balls in the urn.
+                            ## k: the number of balls drawn from the urn.
+                            p <- phyper(q=intersect(SAfeats, arcFeats) %>% nrow,
+                                        m=SAfeats %>% nrow,
+                                        n=nrow(featsUniv) - nrow(SAfeats),
+                                        k=arcFeats %>% nrow,
+                                        lower.tail=F)
+                            foldEnrich <- nrow(intersect(SAfeats, arcFeats)) / expIntersect;
+
+                            ## Bonferroni
+                            cutOff <- .01 /
+                                ((arcsMSig %>% dplyr::select(archetype..) %>%
+                                  unique %>% nrow) *
+                                 (SAMSig %>% dplyr::select(archetype..) %>%
+                                  unique %>% nrow))
+
+                            return(c("obs"=nrow(intersect(SAfeats, arcFeats)),
+                                     "exp"=expIntersect,
+                                     "p"=p,
+                                     "isSignif"=p<cutOff))
+                        })
+                arcScoresT <-
+                    sapply(arcScores, function(x) { x }) %>% t %>% as.data.frame %>% 
+                    rownames_to_column() %>%
+                    mutate(tissueArch=arcIdx) %>%
+                    rename("univArch"=rowname)
+                return(arcScoresT)
+            })
+
 ```
 
 
 ```{r}
-SAmappingT <-
-    SAmapping %>% bind_rows %>%
-    mutate(cancer=cancerIDs[cancerIdx])
-
-
-    
-arcsMSigT <-
-arcsMSig %>% bind_rows %>% 
-inner_join(
-    tibble(univArch=paste("archetype..", 1:5, sep=""),
-           cancerTask=names(arcCols))) #%>%
-select(-univArch) %>%
-mutate(tissueArch=paste(cancer, tissueArch)) %>%
-select(-cancer) %>%
-mutate(enrichment=obs/exp, pp=-log10(p)) %>%
-as_tibble %>%
-mutate(isSignif=parse_logical(isSignif)) %>% 
-mutate(logEnrich=ifelse(enrichment<1 & !isSignif, 0, log2(enrichment))) %>%
-mutate(logEnrich=ifelse(logEnrich>3, 3, logEnrich)) %>% 
-mutate(pp=ifelse(isSignif, pp, 0)) %>%
-mutate(pp=ifelse(pp>80, 80, pp)) %>%
-arrange(desc(tissueArch)) %>%
-mutate(cancerTask=parse_factor(cancerTask,
-                               levels=rev(names(arcCols)[c(3,2,1,4,5)]),
-                               ordered=T))
-
-## Find best task for each archetype
-bestTask <-
-    sapply(arcsMSigT %>% select(tissueArch) %>% unique %>%
-           unlist %>% as.character, function(arch) {
-               signifSA <-
-                   arcsMSigT %>% inner_join(tibble(tissueArch=!!arch)) %>%
-                   filter(isSignif)
-               if ( nrow(signifSA) == 0 ) { return(NA) }
-               SAidx <- signifSA %>% select(p) %>% unlist %>% as.numeric %>% which.min
-               signifSA[SAidx,"cancerTask"] %>% unlist %>% as.character
-           }) %>% enframe %>%
-    mutate(value=parse_factor(value,
-                              levels=rev(names(arcCols)[c(3,2,1,4,5)]),
-                              ordered=T))
-       
-
-ggplot(arcsMSigT) +
-    geom_tile(aes(y=cancerTask, x=tissueArch, fill=pp)) +
-    scale_fill_distiller(palette="GnBu") +
-    geom_point(aes(x=name, y=value), shape=21, data=bestTask, size=3, fill="grey") +
-    ## scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) +
-    labs(fill="-log10 p", y="universal cancer task",
-         x="tissue archetypes")
-ggsave("matrixUnivsalVsTissueArchs.pdf", height=3, width=14)
+# SAmappingT <-
+#     SAmapping %>% bind_rows %>%
+#     mutate(cancer=cancerIDs[cancerIdx])
+# 
+# 
+#     
+# arcsMSigT <-
+# arcsMSig %>% bind_rows %>% 
+# inner_join(
+#     tibble(univArch=paste("archetype..", 1:5, sep=""),
+#            cancerTask=names(arcCols))) #%>%
+# select(-univArch) %>%
+# mutate(tissueArch=paste(cancer, tissueArch)) %>%
+# select(-cancer) %>%
+# mutate(enrichment=obs/exp, pp=-log10(p)) %>%
+# as_tibble %>%
+# mutate(isSignif=parse_logical(isSignif)) %>% 
+# mutate(logEnrich=ifelse(enrichment<1 & !isSignif, 0, log2(enrichment))) %>%
+# mutate(logEnrich=ifelse(logEnrich>3, 3, logEnrich)) %>% 
+# mutate(pp=ifelse(isSignif, pp, 0)) %>%
+# mutate(pp=ifelse(pp>80, 80, pp)) %>%
+# arrange(desc(tissueArch)) %>%
+# mutate(cancerTask=parse_factor(cancerTask,
+#                                levels=rev(names(arcCols)[c(3,2,1,4,5)]),
+#                                ordered=T))
+# 
+# ## Find best task for each archetype
+# bestTask <-
+#     sapply(arcsMSigT %>% select(tissueArch) %>% unique %>%
+#            unlist %>% as.character, function(arch) {
+#                signifSA <-
+#                    arcsMSigT %>% inner_join(tibble(tissueArch=!!arch)) %>%
+#                    filter(isSignif)
+#                if ( nrow(signifSA) == 0 ) { return(NA) }
+#                SAidx <- signifSA %>% select(p) %>% unlist %>% as.numeric %>% which.min
+#                signifSA[SAidx,"cancerTask"] %>% unlist %>% as.character
+#            }) %>% enframe %>%
+#     mutate(value=parse_factor(value,
+#                               levels=rev(names(arcCols)[c(3,2,1,4,5)]),
+#                               ordered=T))
+#        
+# 
+# ggplot(arcsMSigT) +
+#     geom_tile(aes(y=cancerTask, x=tissueArch, fill=pp)) +
+#     scale_fill_distiller(palette="GnBu") +
+#     geom_point(aes(x=name, y=value), shape=21, data=bestTask, size=3, fill="grey") +
+#     ## scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) +
+#     labs(fill="-log10 p", y="universal cancer task",
+#          x="tissue archetypes")
+# ggsave("matrixUnivsalVsTissueArchs.pdf", height=3, width=14)
 ```
 
