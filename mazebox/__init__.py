@@ -21,3 +21,4 @@ import scanpy as sc
 import scvelo as scv
 import os.path as op
 import sys
+import cellrank

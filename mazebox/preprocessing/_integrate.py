@@ -4,7 +4,7 @@ import scvelo as scv
 import pandas as pd
 import numpy as np
 
-def scanorama_recipe(adata, copy = False, groups = 'timepoints', correct = False, basis = 'umap'):
+def scanorama_recipe(adata, copy = False, groups = 'timepoints', correct = False, basis = 'umap', random_state = 0):
 
     batches = sorted(adata.obs[groups].cat.categories)
 
@@ -28,12 +28,12 @@ def scanorama_recipe(adata, copy = False, groups = 'timepoints', correct = False
         first = corrected.pop(0)
         adata_SC = first.concatenate(corrected, batch_key=groups,
                                             batch_categories=batches)
-        sc.tl.pca(adata_SC)
-        sc.pp.neighbors(adata_SC)
+        sc.tl.pca(adata_SC, random_state = random_state)
+        sc.pp.neighbors(adata_SC, random_state = random_state)
         if basis == 'umap':
-            sc.tl.umap(adata_SC, random_state=1)
+            sc.tl.umap(adata_SC, random_state=1, random_state = random_state)
         elif basis == 'tsne':
-            sc.tl.tsne(adata_SC, random_state=1)
+            sc.tl.tsne(adata_SC, random_state=1, random_state = random_state)
         else:
             print('Basis must be one of ["umap","tsne"]')
 
