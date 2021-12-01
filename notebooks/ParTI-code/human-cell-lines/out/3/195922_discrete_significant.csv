@@ -1,0 +1,4 @@
+archetype #,Feature Name,P value (Hypergeom.),Significant after Benjamini-Hochberg correction?,P maximal
+2,source: CCLE,0.00025953,1,0.94496
+2,subtype: Y,0.0033559,1,0.53159
+3,source: CCLE,0.0026125,1,0.78088
