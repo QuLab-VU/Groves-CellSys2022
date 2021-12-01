@@ -15,7 +15,10 @@ def scanorama_recipe(adata, copy = False, groups = 'timepoints', correct = False
 
     # convert to list of AnnData objects
     adatas = list(alldata.values())
-    integrated, corrected = scanorama.correct_scanpy(adatas, return_dimred=True)
+    # integrated, corrected = scanorama.correct_scanpy(adatas, return_dimred=True)
+
+    #updated to be compatible with scanorama v1.7, which only returns corrected
+    corrected = scanorama.correct_scanpy(adatas, return_dimred=True)
     all_ind = sc.concat(adatas).obs_names
     all_s = np.concatenate(integrated)
     print(all_s.shape)
