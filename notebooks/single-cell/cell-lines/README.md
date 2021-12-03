@@ -4,6 +4,14 @@
 
 I split the human cell line analysis into multiple notebooks. Each notebook saves an `h5ad` version of `adata` to be opened in the next notebook.
 
+Step 1: Run `1-Human_cell_lines_preprocessing,ipynb`. This filters and normalizes the data with dropkick, checks for doublets, investigates cell cycle dependence, and batch corrects the data with `scanorama` (adding the attributes `.obsm['X_scanorama']` and `.obsm['corrected]`).
+
+Step 2: Run `2-Human_cell_lines_scPCHA.ipynb`. This runs `py_pcha` several different ways to check dependence on minor parameter choices and locations of archetypes. It then uses diffusion distance to calculate archetype neighborhoods in the data, and label cells closest to archetypes. 
+
+Step 3: Run ParetoTI/ParTI to find t-ratios and compare to bulk archetypes.
+
+Step 4: Run `3_Human_cell_lines_subtyping.ipynb`. This uses the bulk archetype signatures to label cells, as in the originally submitted manuscript.
+
 Key points for ordering analyses:
 1. Archetype analysis applied directly to single cell data (and PCA transformation to bulk PCA space):
     1. We want to use MAGIC imputation (which can affect the X layer) 
