@@ -20,7 +20,7 @@ def scanorama_recipe(adata, copy = False, groups = 'timepoints', correct = False
     #updated to be compatible with scanorama v1.7, which only returns corrected
     corrected = scanorama.correct_scanpy(adatas, return_dimred=True)
     all_ind = sc.concat(adatas).obs_names
-    all_s = np.concatenate(integrated)
+    all_s = np.concatenate(corrected.obs['X_scanorama'])
     print(all_s.shape)
 
     all_sc = pd.DataFrame(all_s, index=all_ind)
@@ -34,9 +34,9 @@ def scanorama_recipe(adata, copy = False, groups = 'timepoints', correct = False
         sc.tl.pca(adata_SC, random_state = random_state)
         sc.pp.neighbors(adata_SC, random_state = random_state)
         if basis == 'umap':
-            sc.tl.umap(adata_SC, random_state=1, random_state = random_state)
+            sc.tl.umap(adata_SC, random_state = random_state)
         elif basis == 'tsne':
-            sc.tl.tsne(adata_SC, random_state=1, random_state = random_state)
+            sc.tl.tsne(adata_SC, random_state = random_state)
         else:
             print('Basis must be one of ["umap","tsne"]')
 

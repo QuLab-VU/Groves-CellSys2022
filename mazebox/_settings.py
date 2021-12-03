@@ -4,10 +4,20 @@ from pathlib import Path
 from time import time
 
 _Format = [
-    'png', 'jpg', 'tif', 'tiff',
-    'pdf', 'ps', 'eps', 'svg', 'svgz', 'pgf',
-    'raw', 'rgba',
+    "png",
+    "jpg",
+    "tif",
+    "tiff",
+    "pdf",
+    "ps",
+    "eps",
+    "svg",
+    "svgz",
+    "pgf",
+    "raw",
+    "rgba",
 ]
+
 
 class MazeboxConfig:
     def __init__(
@@ -23,7 +33,7 @@ class MazeboxConfig:
         cachedir: Union[str, Path] = "./cache/",
         datasetdir: Union[str, Path] = "./data/",
         figdir: Union[str, Path] = "./figures/",
-        cache_compression: Union[str, None] = 'lzf',
+        cache_compression: Union[str, None] = "lzf",
         max_memory=15,
         n_jobs=1,
         logfile: Union[str, Path, None] = None,
@@ -71,18 +81,18 @@ class MazeboxConfig:
         """Default number of principal components to use."""
 
     def set_figure_params(
-            self,
-            dpi: int = 80,
-            dpi_save: int = 150,
-            frameon: bool = True,
-            vector_friendly: bool = True,
-            fontsize: int = 14,
-            figsize: Optional[int] = None,
-            color_map: Optional[str] = None,
-            format: _Format = "pdf",
-            facecolor: Optional[str] = None,
-            transparent: bool = False,
-            ipython_format: str = "png2x",
+        self,
+        dpi: int = 80,
+        dpi_save: int = 150,
+        frameon: bool = True,
+        vector_friendly: bool = True,
+        fontsize: int = 14,
+        figsize: Optional[int] = None,
+        color_map: Optional[str] = None,
+        format: _Format = "pdf",
+        facecolor: Optional[str] = None,
+        transparent: bool = False,
+        ipython_format: str = "png2x",
     ):
         """\
         Set resolution/size, styling and format of figures.
@@ -119,12 +129,14 @@ class MazeboxConfig:
         """
         try:
             import IPython
+
             if isinstance(ipython_format, str):
                 ipython_format = [ipython_format]
             IPython.display.set_matplotlib_formats(*ipython_format)
         except Exception:
             pass
         from matplotlib import rcParams
+
         self._vector_friendly = vector_friendly
         self.file_format_figs = format
         if dpi is not None:
@@ -134,10 +146,11 @@ class MazeboxConfig:
         if transparent is not None:
             rcParams["savefig.transparent"] = transparent
         if facecolor is not None:
-            rcParams['figure.facecolor'] = facecolor
-            rcParams['axes.facecolor'] = facecolor
+            rcParams["figure.facecolor"] = facecolor
+            rcParams["axes.facecolor"] = facecolor
         if figsize is not None:
-            rcParams['figure.figsize'] = figsize
+            rcParams["figure.figsize"] = figsize
         self._frameon = frameon
+
 
 settings = MazeboxConfig()

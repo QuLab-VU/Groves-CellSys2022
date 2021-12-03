@@ -5,11 +5,11 @@
 I split the human cell line analysis into multiple notebooks. Each notebook saves an `h5ad` version of `adata` to be opened in the next notebook.
 
 Key points for ordering analyses:
-1. Archetype analysis applied directly to single cell data:
+1. Archetype analysis applied directly to single cell data (and PCA transformation to bulk PCA space):
     1. We want to use MAGIC imputation (which can affect the X layer) 
     2. Possibly scanorama batch correction (which definitely affects X) 
     3. Possibly cell cycle regression (also definitely affects X)
-2. Archetype analysis based on the bulk signatures:
+2. Archetype analysis based on the bulk signatures (signature subtyping):
     1. The data needs to be preprocessed in the same way as the bulk data. This means filtered, normalized, and log-transformed, which is done with Dropkick. 
     2. We do not want to use MAGIC imputed or batch corrected values for scoring. 
     2. If we run RNA velocity prior to this, mazebox will transform both the data and an extrapolated timepoint into archetype (signature) space. 
