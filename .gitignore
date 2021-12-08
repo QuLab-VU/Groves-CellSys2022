@@ -10,3 +10,4 @@ mazebox/preprocessing/.DS_Store
 notebooks/.ipynb_checkpoints/Bulk-Archetype-Tasks-checkpoint.ipynb
 *.Rdata
 *.h5ad
+notebooks/out/cell-lines/downsampled_X_magic_for_ParTI.csv
