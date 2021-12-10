@@ -35,3 +35,6 @@ Code and figures related to Groves et al. submitted to Cell Systems 2021
 - `ParTI` : ParTI package code, which is used in `notebooks/ParTI-code`.
 - `R_code` : R code from Darren Tyson
 - `environment.yml` : conda environment 
+
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/QuLab-VU/Groves-CellSys2021/sarah)
