@@ -21,7 +21,21 @@ def generate_signature(
     print_c=False,
     sort_by_ascending=False,
 ):
-
+    """
+    
+    :param archetypes:
+    :param sig_df:
+    :param range_min:
+    :param range_max:
+    :param range_step:
+    :param norm:
+    :param threshold:
+    :param subset_by:
+    :param sort_by:
+    :param print_c:
+    :param sort_by_ascending:
+    :return:
+    """
     cond = np.inf
     n_genes = 0
     df_keep = None
