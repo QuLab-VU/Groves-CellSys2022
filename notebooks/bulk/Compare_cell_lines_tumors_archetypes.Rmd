@@ -104,13 +104,13 @@ SAmapping <- # iterate over tissue archetypes
                     rename("univArch"=rowname)
                 return(arcScoresT)
             })
-save.image("~/Documents/Github/Groves-CellSys2021/notebooks/ParTI-code/SAmapping.RData")
-load("/Users/smgroves/Documents/Github/Groves-CellSys2021/notebooks/ParTI-code/SAmapping.RData")
+# save.image("~/Documents/Github/Groves-CellSys2021/notebooks/ParTI-code/SAmapping.RData")
+# load("/Users/smgroves/Documents/Github/Groves-CellSys2021/notebooks/ParTI-code/SAmapping.RData")
 ```
 
 ```{r}
 # Tumor vs Cell Line
-arcsMSig <-read.csv('../ParTI-code/thomas-tumors/out/5/') %>%
+SAMSig <-read.csv('../ParTI-code/thomas-tumors/out/5/927196_continuous_significant.csv') %>%
             dplyr::filter(Mean.Difference > 0.1)
 featsUniv <- dplyr::union(SAMSig %>% dplyr::select("Feature.Name"),
                    arcsMSig %>% dplyr::select("Feature.Name"))
