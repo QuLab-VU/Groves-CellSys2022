@@ -1,5 +1,5 @@
 # This code is taken from all over the place. It has been regenerated many times, but the final version that is copied here is taken from
-# single-cell-cline-plasticity_full_102120.ipynb, which is in mazebox_legacy > mazebox > examples > notebooks > bulk.
+# single-cell-cline-plasticity_full_102120.ipynb, which is in smgroves Github > mazebox > examples > notebooks > bulk.
 import sys
 import pandas as pd
 import os.path as op
