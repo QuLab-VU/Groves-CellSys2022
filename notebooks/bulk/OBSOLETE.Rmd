@@ -1,0 +1,158 @@
+---
+title: "OBSOLETE"
+output: html_notebook
+---
+
+#FROM BATCH CORRECTION OF CMT DATA
+
+#### Heatmap using 1-Spearman coeff as distance
+```{r Heatmap vargenes, fig.height=8, fig.width=8}
+# pdf(file="../figures/hm_temp_vargenes.pdf", height=8, width=8)
+data <- '../data/SCLC_combined_Minna_CCLE_batch_corrected_wo_lowgenes.csv'
+x <- read.csv(data, header = TRUE, sep = ',', row.names = 1)
+x <- as.matrix(x)
+hm <- heatmap(x,
+        keep.dendro = TRUE,
+        col=bluered(20),
+        distfun = function(x) as.dist(1-cor(t(x), method='spearman')),
+        cexRow=0.25, cexCol=0.25
+        )
+# dev.off()
+```
+
+#### Extract dendrogram from heatmap
+```{r Dendrogram, fig.height=6, fig.width=8}
+#pdf(file="./figures/no_lowgenes_hc_spearman.pdf", height=8, width=8)
+hm.dend <-  as.dendrogram(hm[['Colv']])
+nodePar <- list(lab.cex = 0.25, pch = c(NA, 19),
+                cex = 0.25, col = "blue")
+# pdf(file="../figures/supplement/hc_cline_tumors_all_genes.pdf", height=8, width=8)
+
+#plot(hm.dend,  nodePar = nodePar, horiz = TRUE, xlim=c(0.7,0))
+sd <- hm.dend
+#dev.off()
+```
+```{r}
+data_labels <-'/Users/smgroves/Documents/MATLAB/particode/Data/combined_clusters_2020-05-27-MC copy.csv'
+
+# data_labels <-'../data/combined_clusters.csv'
+labels <- read.csv(data_labels, header = TRUE, sep = ',', row.names = 1)
+labels <- labels[row.names(xt),]
+colors_to_use <- as.numeric(xt$ASCL1)
+colors_to_use <- colors_to_use[order.dendrogram(hm.dend)]
+pdf(file="./figures/dend_ASCL1.pdf", height=20, width=40)
+
+barplot(colors_to_use, names.arg = rownames(labels)[order.dendrogram(hm.dend)],las = 2)
+dev.off()
+labels_colors(hm.dend) <- colors_to_use
+pdf(file="./figures/no_lowgenes_hc_NEUROD1.pdf", height=20, width=20)
+nodePar <- list(lab.cex = 0.25, pch = c(NA, 19),
+                cex = 0.25, col = "blue")
+plot(hm.dend,  nodePar = nodePar, horiz = TRUE, xlim=c(0.5,0))
+dev.off()
+
+```
+
+
+#### Assign colors to branches.
+Keeping multiple copies of this code chunk specific to each subset of source data and genes to avoid retyping if/when clustering order changes. Must manually run these as they are set to not run (`eval=FALSE`).
+
+
+#### Compare to prior clustering
+```{r}
+subt_v2 <- read.csv('../data/combined_clusters_2020-04-28.csv',as.is=TRUE, row.names=1)
+# subt_v3 <- read.csv('../data/combined_clusters_2020-05-27.csv',as.is=TRUE, row.names=1)
+mysubt$subtype_v2 <- subt_v2[rownames(mysubt),"subtype"]
+mysubt$subtype_v3 <- subt_v3[rownames(mysubt),"subtype"]
+```
+
+#### Test PlotByPhen on new clustering
+*Note that the statistical tests are biased in these graphs due to overrepresentation of cell lines with samples in more than one datset. Those data should be averaged across the datasets to obtain a single value for each cell line.*  
+
+First load function and necessary data (need an object names `clusters` with phenotype data in it).
+```{r plotByPhen}
+source('/Users/smgroves/Documents/Github/SCLC/RNA-seq/code/ShinyApps/plotByPhenShiny/PlotByPhen.r', chdir = TRUE)
+clusters <- mysubt
+clusters$nphenotype <- clusters$phenotype <- mysubt$subtype
+```
+
+Examine expression patterns of TFs.
+```{r TF by subtype}
+TF_genes_to_test <- c("ASCL1","NEUROD1","YAP1","POU2F3","ELF3","ISL1","INSM1","MYC","MYCL","DLX5",
+                      "NOTCH1","NOTCH2","HES1","REST","NR0B2","SMAD3","NKX2-1","NEUROD2")
+
+invisible(sapply(TF_genes_to_test, function(x) plotByPhen(x, dat=bc)))
+```
+
+Examine expression patterns of other genes (e.g. NE markers and genes thought to be involved in lung development).
+```{r}
+other_genes_to_test <- c("CALCA","SEC11C","DLL3","NCAM1","FGFR1","RET","BCL2","GRP","SCNN1A","CEACAM5")
+
+invisible(sapply(other_genes_to_test, function(x) plotByPhen(x, dat=bc)))
+```
+
+#### Save normalized data to file
+```{r Save batch-corrected data to file, eval=FALSE}
+write.csv(bc, file="../data/SCLC_CCLE_Minna_Thomas_allgenes.csv")
+write.csv(clusters, file="../data/combined_clusters.csv")
+write.csv(data.frame(vargenes=vargenes), file="../data/variable_genes.csv", row.names=FALSE)
+```
+
+
+
+### Batch correct only RNA-seq data
+Since microarray data are missing many genes, some analyses should be performed using only RNA-seq data. These data still require batch correction.
+```{r}
+# data for correction; must remove genes containing any NA values
+# Use CCLE/Minna data
+dfc_cm <- cm[!apply(cm,1,function(x) any(is.na(x))),]
+phen_cm <- data.frame(subtype=getSubtype(colnames(dfc_cm), dat=dfc_cm),
+                   cell.line=getCellLine(colnames(dfc_cm)),
+                   source=sapply(colnames(dfc_cm), getSource)
+                   )
+mod_cm <- model.matrix(~ cell.line, phen_cm)
+bc_cm <- ComBat(as.matrix(dfc_cm), batch=substr(colnames(dfc_cm),1,1), mod=mod_cm)
+```
+
+#### After correction
+```{r}
+matdensity(bc_cm, main="Batch corrected", xlab="log2 expression", ylab="density",
+           groupFactor=substr(colnames(bc_cm),1,1))
+legend("topright",legend=c("CCLE","Minna"), col=RColorBrewer::brewer.pal(8, "Dark2")[1:2], lwd=2)
+```
+
+#### Save batch correction data
+Save only for CCLE/Minna data to be used to include data from genes missing from GDSC data.
+```{r Save batch-corrected CM data, eval=FALSE, include=FALSE}
+write.csv(bc_cm, file="../data/SCLC_CCLE_Minna_RNA-seq_batch-corrected_geneexp.csv")
+
+```
+
+#### Identify genes that are highly expressed and not different across subtypes
+```{r}
+lmp <- function (modelobject) {
+    if (class(modelobject) != "lm") stop("Not an object of class 'lm' ")
+    f <- summary(modelobject)$fstatistic
+    p <- pf(f[1],f[2],f[3],lower.tail=F)
+    attributes(p) <- NULL
+    return(p)
+}
+
+ctrl_genes <- character()
+he <- bc_cm[apply(bc_cm,1, function(x) all(x>5)),]
+he <- he[,rownames(clusters)[!grepl("^g",rownames(clusters))]]
+subt <- clusters[!grepl("^g",rownames(clusters)),"subtype"]
+the <- cbind(data.frame(subtype=subt),t(he))
+heg <- colnames(the)[-1]
+m <- sapply(heg, function(gene) {
+    mymod <- formula(paste(gene,"~ subtype"))
+    lmp(lm(mymod, dat=the))
+})
+
+ctrl_genes <- names(sort(m[m>0.2],decreasing=TRUE))
+```
+#### Write control genes to file
+```{r}
+write.csv(data.frame(control_gene=ctrl_genes), file="../data/control_genes.csv", row.names=FALSE)
+```
+
