@@ -11,7 +11,7 @@ output:
 
 This document is based on characterizeArchetypes.R from Hausser Code from Hausser et al. It compares the original archetypes (5) found on cell line data to the combined archetypes found on all the data by figuring out which archetypes have the most overlapping gene ontology enrichments.
 
-```{r setup, include=FALSE}
+```{r Setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 # BiocManager::install(c('fdrtool','ade4','rgl'))
 library(fdrtool)
@@ -24,7 +24,17 @@ library(tidyverse)
 library(forcats)
 ```
 
-```{r}
+#### Variables relevant to paths on your computer
+May run without changing; default is a directory on the Desktop.
+```{r Output}
+OUTPUT_DIR <- file.path("~/Desktop/SCLC_archetypes_output")
+OVERWRITE <- FALSE
+
+if(!dir.exists(OUTPUT_DIR)) dir.create(OUTPUT_DIR)
+```
+
+#### Load data and filter genes by mean difference
+```{r }
 ## Import archetype color scheme
 # source("../ParTI-code/hallmarkOmeter.inc.R")
 
@@ -242,7 +252,11 @@ SAmapping_clines56 <- # iterate over tissue archetypes
                     rename("univArch"=rowname)
                 return(arcScoresT)
             })
-save.image("~/Documents/Github/Groves-CellSys2021/notebooks/ParTI-code/SAmapping_clines56.Rdata")
+
+SAmapping_clines56_savepath <- file.path(OUTPUT_DIR,"SAmapping_clines56.Rdata")
+if(!file.exists(SAmapping_clines56_savepath) | OVERWRITE) 
+    save.image(SAmapping_clines56_savepath)
+# save.image("~/Documents/Github/Groves-CellSys2021/notebooks/ParTI-code/SAmapping_clines56.Rdata")
 
 SAMSig <- read.csv("../ParTI-code/human-cell-lines/out/4/743683/743683_continuous_significant.csv")
 SAMSig <- SAMSig %>% dplyr::filter(Mean.Difference > 0.1)
@@ -320,7 +334,7 @@ SAmapping_clines45 <- # iterate over tissue archetypes
 ```
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 # SAmappingT <-
 #     SAmapping %>% bind_rows %>%
 #     mutate(cancer=cancerIDs[cancerIdx])
