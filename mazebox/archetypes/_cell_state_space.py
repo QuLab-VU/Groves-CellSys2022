@@ -362,6 +362,8 @@ def phenotyping_recipe(
     type=None,
     scale=False,
     eps=0.001,
+    velocity=False,
+    save=False,
 ):
     """
     :param adata: AnnData object
@@ -380,20 +382,23 @@ def phenotyping_recipe(
     data, sig_matrix1, adata_small, lanorm = transform_tumor_space(
         adata, sig_matrix, unlog=unlog, scale=scale, type=type
     )
-    data_vel, sig_matrix2, adata_small = transform_vel(
-        adata_small, sig_matrix1, scale=scale, lanorm=lanorm
-    )
     data.index = adata_small.obs_names
     data.columns = sig_matrix.columns
     for s in data:
         adata_small.obs[f"{s}_Score"] = data[s]
         adata.obs[f"{s}_Score"] = data[s]
 
-    data_vel.index = adata_small.obs_names
-    data_vel.columns = sig_matrix.columns
-    for s in data_vel:
-        adata_small.obs[f"{s}_Score_t1"] = data_vel[s] + data[s]
-        adata.obs[f"{s}_Score_t1"] = data_vel[s] + data[s]
+    if velocity:
+        data_vel, sig_matrix2, adata_small = transform_vel(
+            adata_small, sig_matrix1, scale=scale, lanorm=lanorm
+        )
+        data_vel.index = adata_small.obs_names
+        data_vel.columns = sig_matrix.columns
+        for s in data_vel:
+            adata_small.obs[f"{s}_Score_t1"] = data_vel[s] + data[s]
+            adata.obs[f"{s}_Score_t1"] = data_vel[s] + data[s]
+    else:
+        sig_matrix2 = sig_matrix
 
     # filtered phenotype
     pheno = []
@@ -420,7 +425,8 @@ def phenotyping_recipe(
         ax = plt.subplot()
         sns.boxplot(data=adata.obs, x=groupby, y=f"{i}_Score_pos")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-        plt.savefig(f"./figures/{save_as}/{i}.pdf")
+        if save:
+            plt.savefig(f"./figures/{save_as}/{i}.pdf")
     # cp = ['#fc8d62', '#66c2a5', '#FFD43B', '#8da0cb', '#e78ac3']
     # color_dict = {'SCLC-Y': cp[4], 'SCLC-A': cp[0], 'SCLC-A2': cp[1], 'SCLC-N': cp[2], 'SCLC-P': cp[3],
     #               'Generalist': 'darkgray', 'None': 'lightgrey'}
