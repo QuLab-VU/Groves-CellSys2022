@@ -249,36 +249,41 @@ print(Sys.time() - start)
 We'll start by fitting 5 archetypes and finding the enriched genes and gene sets for each.
 
 ``` {r}
-arc <- fit_pch(x_pca, noc = 4, delta = 0, conv_crit = 1e-04, maxiter = 500)
-
-##################################
-
-# Fit 6 archetypes with bootstrapping for robustness 
-arc_rob = fit_pch_bootstrap(x_pca, n = 200, sample_prop = .8, seed = 2543, delta = 1,
-                            noc = 6)
-arc_ave <- average_pch_fits(arc_rob)
-save(arc, file="../../out/cell-lines/ParetoTI/arc.Robj")
-save(arc_rob, file="../../out/cell-lines/ParetoTI/arc_rob.Robj")
-save(arc_ave, file="../../out/cell-lines/ParetoTI/arc_ave.Robj")
-write.csv(arc$XC, file="../../out/cell-lines/ParetoTI/arc_positions_pca.csv")
-write.csv(arc_ave$XC, file="../../out/cell-lines/ParetoTI/arc_ave_positions_pca.csv")
-
-reconstruct_from_pca <- function(x, loadings, arc_XC, nComp = 11){
-    mu = colMeans(t(x)) #mean for each feature (gene)
-    # Xhat = [r(samples) x c(PCs)] %*% [r(PCs) x c(Features)] 
-    # Xhat = [r(samples) x c(features)]
-    Xhat = arc_XC[,1:nComp] %*% t(loadings[,1:nComp])
-    Xhat = scale(Xhat, center = -mu, scale = FALSE)
-    return(Xhat)}
-x_recon <- reconstruct_from_pca(x, loadings, x_pca)
-arc_genespace <- reconstruct_from_pca(x = x, loadings = loadings, arc_XC = t(arc_ave$XC))
-write.csv(t(arc_genespace), '../../out/cell-lines/ParetoTI/arc_gene-space.csv')
+# arc <- fit_pch(x_pca, noc = 4, delta = 0, conv_crit = 1e-04, maxiter = 500)
+# 
+# ##################################
+# 
+# # Fit 4 archetypes with bootstrapping for robustness 
+# arc_rob = fit_pch_bootstrap(x_pca, n = 200, sample_prop = .8, seed = 2543, delta = 1,
+#                             noc = 4)
+# arc_ave <- average_pch_fits(arc_rob)
+# save(arc, file="../../out/cell-lines/ParetoTI/arc.Robj")
+# save(arc_rob, file="../../out/cell-lines/ParetoTI/arc_rob.Robj")
+# save(arc_ave, file="../../out/cell-lines/ParetoTI/arc_ave.Robj")
+# write.csv(arc$XC, file="../../out/cell-lines/ParetoTI/arc_positions_pca.csv")
+# write.csv(arc_ave$XC, file="../../out/cell-lines/ParetoTI/arc_ave_positions_pca.csv")
+# 
+# reconstruct_from_pca <- function(x, loadings, arc_XC, nComp = 11){
+#     mu = colMeans(t(x)) #mean for each feature (gene)
+#     # Xhat = [r(samples) x c(PCs)] %*% [r(PCs) x c(Features)] 
+#     # Xhat = [r(samples) x c(features)]
+#     Xhat = arc_XC[,1:nComp] %*% t(loadings[,1:nComp])
+#     Xhat = scale(Xhat, center = -mu, scale = FALSE)
+#     return(Xhat)}
+# x_recon <- reconstruct_from_pca(x, loadings, x_pca)
+# arc_genespace <- reconstruct_from_pca(x = x, loadings = loadings, arc_XC = t(arc_ave$XC))
+# write.csv(t(arc_genespace), '../../out/cell-lines/ParetoTI/arc_gene-space.csv')
+# 
+# arc_genespace <- reconstruct_from_pca(x = x, loadings = loadings, arc_XC = t(arc$XC))
+# write.csv(t(arc_genespace), '../../out/cell-lines/ParetoTI/arc_single-fit-gene-space.csv')
 ##################################
 # 
 # load(file="../int/single-cell/arc.Robj")
 # load( file="../int/single-cell/arc_rob.Robj")
 # load( file="../int/single-cell/arc_ave.Robj")
+```
 
+```{r}
 Idents(object = data) <- data@meta.data$cline #add cell line labels
 
 cols <- c(brewer.pal(9, "Set1"),'gray')
