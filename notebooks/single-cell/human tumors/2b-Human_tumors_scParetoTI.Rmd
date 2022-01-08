@@ -49,12 +49,12 @@ cumu <- cumsum(pct)
 # Determine which PC exhibits cumulative percent greater than 90% and % variation associated with the PC is less than 5
 co1 <- which(cumu > 90 & pct < 5)[1]
 
-print(co1) #37
+print(co1) #40
 # Determine the difference between variation of PC and subsequent PC
 co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), decreasing = T)[1] + 1
 
 # last point where change of % of variation is more than 0.1%.
-print(co2) #12
+print(co2) #11
 
 data <- FindNeighbors(data, dims = 1:10)
 data <- FindClusters(data, resolution = 0.5)
@@ -168,7 +168,7 @@ x <- data[["RNA"]]@scale.data
 x_pca <- read.csv('../../out/human-tumors/ParetoTI/pca_embedding.csv',header = TRUE,row.names = 1)
 x_pca <- t(x_pca)
 
-x_pca <- x_pca[1:12,] #keep only top 11 PCs
+x_pca <- x_pca[1:11,] #keep only top 11 PCs
 loadings<- read.csv('../../out/human-tumors/ParetoTI/pca_feature_loadings.csv', header = TRUE, row.names = 1)
 loadings <- as.matrix(loadings)
 ```
@@ -190,28 +190,10 @@ plot_arc_var(arc_ks_8, type = "t_ratio", point_size = 2, line_size = 1.5) + them
 
 ```
 
-``` {r}
-arc_ks = k_fit_pch(x_pca, ks = 2:8, check_installed = T,
-                   bootstrap = T, bootstrap_N = 200, maxiter = 1000,
-                   bootstrap_type = "m", seed = 2543, 
-                   volume_ratio = "t_ratio", # set to "none" if too slow
-                   delta=0, conv_crit = 1e-04, order_type = "align",
-                   sample_prop = 0.75)
-
-# Show variance explained by a polytope with each k (cumulative)
-plot_arc_var(arc_ks, type = "varexpl", point_size = 2, line_size = 1.5) + theme_bw()
-plot_arc_var(arc_ks, type = "res_varexpl", point_size = 2, line_size = 1.5) + theme_bw()
-plot_arc_var(arc_ks, type = "total_var", point_size = 2, line_size = 1.5) +
-  theme_bw() +
-  ylab("Mean variance in position of vertices")
-plot_arc_var(arc_ks, type = "t_ratio", point_size = 2, line_size = 1.5) + theme_bw()
-
-```
-
 ## T-ratio tests
 
 ```{r}
-i = 3
+i = 5
 arc <- fit_pch(x_pca, noc = i, delta = 0, conv_crit = 1e-04, maxiter = 500)
 
 start = Sys.time()
@@ -233,28 +215,37 @@ dev.off()
   # This analysis took:
 print(Sys.time() - start)
 
-
-
+#   k  var_name   var_obs p_value
+# 1: 3   varexpl 0.8063208   0.997
+# 2: 3   t_ratio 0.5963768   0.008
+# 3: 3 total_var        NA     NaN
+#   k  var_name   var_obs p_value
+# 1: 4   varexpl 0.8817896   0.001
+# 2: 4   t_ratio 0.3956580   0.001
+# 3: 4 total_var        NA     NaN
+#    k  var_name   var_obs p_value
+# 1: 5   varexpl 0.9057437   0.645
+# 2: 5   t_ratio 0.0294142   0.753
+# 3: 5 total_var        NA     NaN
 ```
 
 # Fitting archetypes using PCHA
 
-We'll start by fitting 6 archetypes and finding the enriched genes and gene sets for each.
+We'll start by fitting 3 archetypes and finding the enriched genes and gene sets for each.
 
 ``` {r}
-arc <- fit_pch(x_pca, noc = 6, delta = 0, conv_crit = 1e-04, maxiter = 500)
+arc <- fit_pch(x_pca, noc = 3, delta = 0, conv_crit = 1e-04, maxiter = 500)
 
 ##################################
 
 # Fit 6 archetypes with bootstrapping for robustness 
-arc_rob = fit_pch_bootstrap(x_pca, n = 200, sample_prop = .8, seed = 2543, delta = 1,
-                            noc = 6)
+arc_rob = fit_pch_bootstrap(x_pca, n = 200, sample_prop = .8, seed = 2543, delta = 1, noc = 3)
 arc_ave <- average_pch_fits(arc_rob)
-save(arc, file="../../out/cell-lines/ParetoTI/arc.Robj")
-save(arc_rob, file="../../out/cell-lines/ParetoTI/arc_rob.Robj")
-save(arc_ave, file="../../out/cell-lines/ParetoTI/arc_ave.Robj")
-write.csv(arc$XC, file="../../out/cell-lines/ParetoTI/arc_positions_pca.csv")
-write.csv(arc_ave$XC, file="../../out/cell-lines/ParetoTI/arc_ave_positions_pca.csv")
+save(arc, file="../../out/human-tumors/ParetoTI/arc.Robj")
+save(arc_rob, file="../../out/human-tumors/ParetoTI/arc_rob.Robj")
+save(arc_ave, file="../../out/human-tumors/ParetoTI/arc_ave.Robj")
+write.csv(arc$XC, file="../../out/human-tumors/ParetoTI/arc_positions_pca.csv")
+write.csv(arc_ave$XC, file="../../out/human-tumors/ParetoTI/arc_ave_positions_pca.csv")
 
 reconstruct_from_pca <- function(x, loadings, arc_XC, nComp = 11){
     mu = colMeans(t(x)) #mean for each feature (gene)
@@ -265,14 +256,14 @@ reconstruct_from_pca <- function(x, loadings, arc_XC, nComp = 11){
     return(Xhat)}
 x_recon <- reconstruct_from_pca(x, loadings, x_pca)
 arc_genespace <- reconstruct_from_pca(x = x, loadings = loadings, arc_XC = t(arc_ave$XC))
-write.csv(t(arc_genespace), '../../out/cell-lines/ParetoTI/arc_gene-space.csv')
+write.csv(t(arc_genespace), '../../out/human-tumors/ParetoTI/arc_gene-space.csv')
 ##################################
 # 
 # load(file="../int/single-cell/arc.Robj")
 # load( file="../int/single-cell/arc_rob.Robj")
 # load( file="../int/single-cell/arc_ave.Robj")
 
-Idents(object = data) <- data@meta.data$cline #add cell line labels
+Idents(object = data) <- data@meta.data$tumor #add cell line labels
 
 cols <- c(brewer.pal(9, "Set1"),'gray')
 
@@ -285,44 +276,45 @@ p_pca = plot_arc(arc_data = arc, data = x_pca,
                   data_lab = as.character(Idents(data)),
                  text_size = 60, data_size = 2) 
 plotly::layout(p_pca, title = "Archetypes for Top 10 PCs")
-htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/robust_archetypes.html")
+htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/human-tumors/robust_archetypes.html")
 
 p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
                  which_dimensions = 1:3, line_size = 1.5,
                  data_lab = as.numeric(data[['RNA']]@scale.data['NEUROD2',]),
                  text_size = 60, data_size = 3) 
 plotly::layout(p_pca, title = "Expression of NEUROD2 in PCA")
-htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/NEUROD2.HTML")
+htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/human-tumors/NEUROD2.HTML")
 
 p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
                  which_dimensions = 1:3, line_size = 1.5,
                  data_lab = as.numeric(data[['RNA']]@data['YAP1',]),
                  text_size = 60, data_size = 3) 
 plotly::layout(p_pca, title = "Expression of YAP1 in PCA")
-htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/YAP1.html")
+htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/human-tumors/YAP1.html")
 
-p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
-                 which_dimensions = 1:3, line_size = 1.5,
-                 data_lab = as.numeric(data[['RNA']]@data['POU2F3',]),
-                 text_size = 60, data_size = 3) 
-plotly::layout(p_pca, title = "Expression of POU2F3 in PCA")
-htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/POU2F3.html")
+# p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
+#                  which_dimensions = 1:3, line_size = 1.5,
+#                  data_lab = as.numeric(data[['RNA']]@data['POU2F3',]),
+#                  text_size = 60, data_size = 3) 
+# plotly::layout(p_pca, title = "Expression of POU2F3 in PCA")
+# htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/human-tumors/POU2F3.html")
 
 p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
                  which_dimensions = 1:3, line_size = 1.5,
                  data_lab = as.numeric(data[['RNA']]@data['ASCL1',]),
                  text_size = 60, data_size = 3) 
 plotly::layout(p_pca, title = "Expression of ASCL1 in PCA")
-htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/ASCL1.html")
+htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/human-tumors/ASCL1.html")
+
+p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
+                 which_dimensions = 1:3, line_size = 1.5,
+                 data_lab = as.numeric(data[['RNA']]@data['MYC',]),
+                 text_size = 60, data_size = 3) 
+plotly::layout(p_pca, title = "Expression of MYC in PCA")
+htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/human-tumors/MYC.html")
 
 ```
-Archetypes:
-1. N (H524)
-2. A/N (CORL279)
-3. A2 (DMS53)
-4. Y (H841)
-5. A (H69)
-6. A2 (DMS454)
+
 # Determine enriched genes and gene sets to define archetypes
 
 This will be especially interesting for comparing archetypes 4 and 5, since it is pretty clear that the shape of the data is not clearly defined without an archetype at 5, but not many cells actually lie close to it. We use the ParetoTI package to evaulate gene sets enriched in each location. 
@@ -339,15 +331,15 @@ library(matrixStats)
 # ix <- which(rownames(x.orig) %in%c('1.Sep','10.Sep','11.Mar','11.Sep','2.Sep','3.Mar','3.Sep','4.Mar','4.Sep','5.Sep', '5.Mar','6.Sep','6.Mar','7.Sep','7.Mar','8.Sep','8.Mar','9.Sep','9.Mar','RP11-206L10.1'))
 # ix <- which(rownames(x.orig) %in% c('7SK.1'))
 # clean <- x.orig[-ix, ]
-
-
-activ_pi = measure_activity(as.matrix(data[['RNA']]@scale.data), activity_method = 'pseudoinverse',# row names are assumed to be gene identifiers,
-                         which = 'BP', return_as_matrix = F,
-                         taxonomy_id = 9606, keytype = "ALIAS", #9606 is human, 10090 is mouse.
-                         lower = 10, upper = 1000)
-                         # aucell_options =list(aucMaxRank =
-                          # nrow(as.matrix(x.orig)) * 0.05, binary = F, nCores = 3, plotStats = TRUE))
-save(activ_pi, file="../../out/cell-lines/ParetoTI/activ_pi.Robj")
+# 
+# 
+# activ_pi = measure_activity(as.matrix(data[['RNA']]@scale.data), activity_method = 'pseudoinverse',# row names are assumed to be gene identifiers,
+#                          which = 'BP', return_as_matrix = F,
+#                          taxonomy_id = 9606, keytype = "ALIAS", #9606 is human, 10090 is mouse.
+#                          lower = 10, upper = 1000)
+#                          # aucell_options =list(aucMaxRank =
+#                           # nrow(as.matrix(x.orig)) * 0.05, binary = F, nCores = 3, plotStats = TRUE))
+# save(activ_pi, file="../../out/cell-lines/ParetoTI/activ_pi.Robj")
 
 # activ_pi <- within(activ_pi, rm('2__deoxyribonucleotide_biosynthetic_process','2__deoxyribonucleotide_metabolic_process','2_oxoglutarate_metabolic_process','3__phosphoadenosine_5__phosphosulfate_metabolic_process',
 # '3__UTR_mediated_mRNA_destabilization',
@@ -363,22 +355,22 @@ save(activ_pi, file="../../out/cell-lines/ParetoTI/activ_pi.Robj")
 
 data_attr = merge_arch_dist(arc_data = arc_ave, data = x_pca, 
                             feature_data = as.matrix(data[['RNA']]@scale.data),
-                            colData = activ_pi, 
+                            # colData = activ_pi, 
                             dist_metric = c("euclidean", "arch_weights")[1],
                             colData_id = "cells", rank = F) 
-save(data_attr, file="../../out/cell-lines/ParetoTI/data_attr.Robj")
+save(data_attr, file="../../out/human-tumors/ParetoTI/data_attr.Robj")
 
 
 
 enriched_genes = find_decreasing_wilcox(data_attr$data, data_attr$arc_col,
                                 features = data_attr$features_col,
                                 bin_prop = 0.05, method = "BioQC")
-write.csv(enriched_genes, '../../out/cell-lines/ParetoTI/enriched-genes.csv')
+write.csv(enriched_genes, '../../out/human-tumors/ParetoTI/enriched-genes.csv')
 
 enriched_sets = find_decreasing_wilcox(data_attr$data, data_attr$arc_col,
                                 features = data_attr$colData_col,
                                 bin_prop = 0.05, method = "BioQC")
-write.csv(enriched_sets, '../../out/cell-lines/ParetoTI/enriched_sets.csv')
+write.csv(enriched_sets, '../../out/human-tumors/ParetoTI/enriched_sets.csv')
 
 labs = get_top_decreasing(summary_genes = enriched_genes, summary_sets = enriched_sets,
                           cutoff_genes = 0.05,cutoff_sets = 0.05,
