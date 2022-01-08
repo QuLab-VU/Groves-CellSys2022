@@ -22,3 +22,5 @@ notebooks/out/cell-lines/ParTI/downsampled_X_magic_scanorama_for_ParTI.csv
 notebooks/out/cell-lines/ParTI/downsampled_X_magic_for_ParTI.csv
 notebooks/out/cell-lines/ParetoTI/obsolete-with-doublets/integrated-corrected-data.csv
 notebooks/out/human-tumors/ParetoTI/integrated-corrected-data.csv
+notebooks/out/TKO-tumors/ParetoTI/integrated-corrected-data.csv
+notebooks/out/human-tumors/obsolete/integrated-corrected-data.csv
