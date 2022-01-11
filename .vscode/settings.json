@@ -1,4 +1,5 @@
 {
     "python.pythonPath": "/Users/smgroves/Documents/anaconda3/bin/python",
-    "jupyter.jupyterServerType": "local"
+    "jupyter.jupyterServerType": "local",
+    "python.linting.enabled": false
 }

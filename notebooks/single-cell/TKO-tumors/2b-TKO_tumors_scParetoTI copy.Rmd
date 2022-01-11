@@ -236,12 +236,12 @@ print(Sys.time() - start)
 We'll start by fitting 3 archetypes and finding the enriched genes and gene sets for each.
 
 ``` {r}
-arc <- fit_pch(x_pca, noc = 3, delta = 0, conv_crit = 1e-04, maxiter = 500)
+arc <- fit_pch(x_pca, noc = 4, delta = 0, conv_crit = 1e-04, maxiter = 500)
 
 ##################################
 
-# Fit 6 archetypes with bootstrapping for robustness 
-arc_rob = fit_pch_bootstrap(x_pca, n = 200, sample_prop = .8, seed = 2543, delta = 1, noc = 3)
+# Fit 4 archetypes with bootstrapping for robustness 
+arc_rob = fit_pch_bootstrap(x_pca, n = 200, sample_prop = .8, seed = 2543, delta = 1, noc = 4)
 arc_ave <- average_pch_fits(arc_rob)
 save(arc, file="../../out/TKO-tumors/ParetoTI/arc.Robj")
 save(arc_rob, file="../../out/TKO-tumors/ParetoTI/arc_rob.Robj")
@@ -249,7 +249,7 @@ save(arc_ave, file="../../out/TKO-tumors/ParetoTI/arc_ave.Robj")
 write.csv(arc$XC, file="../../out/TKO-tumors/ParetoTI/arc_positions_pca.csv")
 write.csv(arc_ave$XC, file="../../out/TKO-tumors/ParetoTI/arc_ave_positions_pca.csv")
 
-reconstruct_from_pca <- function(x, loadings, arc_XC, nComp = 12){
+reconstruct_from_pca <- function(x, loadings, arc_XC, nComp = 16){
     mu = colMeans(t(x)) #mean for each feature (gene)
     # Xhat = [r(samples) x c(PCs)] %*% [r(PCs) x c(Features)] 
     # Xhat = [r(samples) x c(features)]
@@ -280,19 +280,19 @@ p_pca = plot_arc(arc_data = arc, data = x_pca,
 plotly::layout(p_pca, title = "Archetypes for Top 10 PCs")
 htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/TKO-tumors/robust_archetypes.html")
 
-p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
+p_pca = plot_arc(arc_data = arc, data = x_pca, 
                  which_dimensions = 1:3, line_size = 1.5,
-                 data_lab = as.numeric(data[['RNA']]@scale.data['NEUROD2',]),
+                 data_lab = as.numeric(data[['RNA']]@scale.data['Neurod2',]),
                  text_size = 60, data_size = 3) 
 plotly::layout(p_pca, title = "Expression of NEUROD2 in PCA")
 htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/TKO-tumors/NEUROD2.HTML")
-
-p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
-                 which_dimensions = 1:3, line_size = 1.5,
-                 data_lab = as.numeric(data[['RNA']]@data['YAP1',]),
-                 text_size = 60, data_size = 3) 
-plotly::layout(p_pca, title = "Expression of YAP1 in PCA")
-htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/TKO-tumors/YAP1.html")
+# 
+# p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
+#                  which_dimensions = 1:3, line_size = 1.5,
+#                  data_lab = as.numeric(data[['RNA']]@data['Yap1',]),
+#                  text_size = 60, data_size = 3) 
+# plotly::layout(p_pca, title = "Expression of YAP1 in PCA")
+# htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/TKO-tumors/YAP1.html")
 
 # p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
 #                  which_dimensions = 1:3, line_size = 1.5,
@@ -301,9 +301,9 @@ htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/TKO-tumors/YAP1.html")
 # plotly::layout(p_pca, title = "Expression of POU2F3 in PCA")
 # htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/TKO-tumors/POU2F3.html")
 
-p_pca = plot_arc(arc_data = arc_ave, data = x_pca, 
+p_pca = plot_arc(arc_data = arc, data = x_pca, 
                  which_dimensions = 1:3, line_size = 1.5,
-                 data_lab = as.numeric(data[['RNA']]@data['ASCL1',]),
+                 data_lab = as.numeric(data[['RNA']]@data['Ascl1',]),
                  text_size = 60, data_size = 3) 
 plotly::layout(p_pca, title = "Expression of ASCL1 in PCA")
 htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/TKO-tumors/ASCL1.html")
@@ -327,14 +327,14 @@ library(matrixStats)
 # ix <- which(rownames(x.orig) %in% c('7SK.1'))
 # clean <- x.orig[-ix, ]
 
-
-activ_pi = measure_activity(as.matrix(data[['RNA']]@scale.data), activity_method = 'pseudoinverse',# row names are assumed to be gene identifiers,
-                         which = 'BP', return_as_matrix = F,
-                         taxonomy_id = 10090, keytype = "ALIAS", #9606 is human, 10090 is mouse.
-                         lower = 10, upper = 1000)
-                         # aucell_options =list(aucMaxRank =
-                          # nrow(as.matrix(x.orig)) * 0.05, binary = F, nCores = 3, plotStats = TRUE))
-save(activ_pi, file="../../out/cell-lines/ParetoTI/activ_pi.Robj")
+# 
+# activ_pi = measure_activity(as.matrix(data[['RNA']]@scale.data), activity_method = 'pseudoinverse',# row names are assumed to be gene identifiers,
+#                          which = 'BP', return_as_matrix = F,
+#                          taxonomy_id = 10090, keytype = "ALIAS", #9606 is human, 10090 is mouse.
+#                          lower = 10, upper = 1000)
+#                          # aucell_options =list(aucMaxRank =
+#                           # nrow(as.matrix(x.orig)) * 0.05, binary = F, nCores = 3, plotStats = TRUE))
+# save(activ_pi, file="../../out/cell-lines/ParetoTI/activ_pi.Robj")
 
 # activ_pi <- within(activ_pi, rm('2__deoxyribonucleotide_biosynthetic_process','2__deoxyribonucleotide_metabolic_process','2_oxoglutarate_metabolic_process','3__phosphoadenosine_5__phosphosulfate_metabolic_process',
 # '3__UTR_mediated_mRNA_destabilization',
@@ -350,28 +350,28 @@ save(activ_pi, file="../../out/cell-lines/ParetoTI/activ_pi.Robj")
 
 data_attr = merge_arch_dist(arc_data = arc_ave, data = x_pca, 
                             feature_data = as.matrix(data[['RNA']]@scale.data),
-                            colData = activ_pi, 
+                            # colData = activ_pi, 
                             dist_metric = c("euclidean", "arch_weights")[1],
                             colData_id = "cells", rank = F) 
-save(data_attr, file="../../out/cell-lines/ParetoTI/data_attr.Robj")
+save(data_attr, file="../../out/TKO-tumors/ParetoTI/data_attr.Robj")
 
 
 
 enriched_genes = find_decreasing_wilcox(data_attr$data, data_attr$arc_col,
                                 features = data_attr$features_col,
                                 bin_prop = 0.05, method = "BioQC")
-write.csv(enriched_genes, '../../out/cell-lines/ParetoTI/enriched-genes.csv')
-
-enriched_sets = find_decreasing_wilcox(data_attr$data, data_attr$arc_col,
-                                features = data_attr$colData_col,
-                                bin_prop = 0.05, method = "BioQC")
-write.csv(enriched_sets, '../../out/cell-lines/ParetoTI/enriched_sets.csv')
-
-labs = get_top_decreasing(summary_genes = enriched_genes, summary_sets = enriched_sets,
-                          cutoff_genes = 0.05,cutoff_sets = 0.05,
-                          cutoff_metric = "wilcoxon_p_val", 
-                          p.adjust.method = "fdr", 
-                          order_by = "mean_diff", order_decreasing = T)
+write.csv(enriched_genes, '../../out/TKO-tumors/ParetoTI/enriched-genes.csv')
+# 
+# enriched_sets = find_decreasing_wilcox(data_attr$data, data_attr$arc_col,
+#                                 features = data_attr$colData_col,
+#                                 bin_prop = 0.05, method = "BioQC")
+# write.csv(enriched_sets, '../../out/TKO-tumors/ParetoTI/enriched_sets.csv')
+# 
+# labs = get_top_decreasing(summary_genes = enriched_genes, summary_sets = enriched_sets,
+#                           cutoff_genes = 0.05,cutoff_sets = 0.05,
+#                           cutoff_metric = "wilcoxon_p_val", 
+#                           p.adjust.method = "fdr", 
+#                           order_by = "mean_diff", order_decreasing = T)
 # 1. N (H524)
 # 2. A/N (CORL279)
 # 3. A2 (DMS53)

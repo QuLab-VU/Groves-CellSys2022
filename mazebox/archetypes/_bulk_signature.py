@@ -1,4 +1,6 @@
 # for generating gene signature from bulk RNA-seq data
+# Note: this code is currently used in generate_gene_sig.py in Groves-CellSys2021
+
 import os
 import numpy as np
 import pandas as pd
@@ -22,7 +24,7 @@ def generate_signature(
     sort_by_ascending=False,
 ):
     """
-    
+
     :param archetypes:
     :param sig_df:
     :param range_min:
