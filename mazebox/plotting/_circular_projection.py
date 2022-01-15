@@ -14,7 +14,7 @@ def proximity(probabilities):
     l.append([len(probabilities.columns) - 1, 0])
     best_dlk = 0
     best_perm = None
-    for perm in list(permutations(probabilities.columns, 5)):
+    for perm in list(permutations(probabilities.columns, len(probabilities.columns))):
         d_lk = 0
         for pair in l:
             # print(np.dot(probabilities[perm[pair[0]]], probabilities[perm[pair[1]]]))

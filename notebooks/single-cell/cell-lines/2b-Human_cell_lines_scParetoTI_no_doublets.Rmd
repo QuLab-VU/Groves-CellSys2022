@@ -276,11 +276,14 @@ We'll start by fitting 5 archetypes and finding the enriched genes and gene sets
 # 
 # arc_genespace <- reconstruct_from_pca(x = x, loadings = loadings, arc_XC = t(arc$XC))
 # write.csv(t(arc_genespace), '../../out/cell-lines/ParetoTI/arc_single-fit-gene-space.csv')
+write.csv(t(arc$S), '../../out/cell-lines/ParetoTI/S.csv')
+write.csv(arc$S, '../../out/RPM-time-series/ParetoTI/S.csv')
+
 ##################################
-# 
-# load(file="../int/single-cell/arc.Robj")
-# load( file="../int/single-cell/arc_rob.Robj")
-# load( file="../int/single-cell/arc_ave.Robj")
+
+load(file="../../out/cell-lines/ParetoTI/arc.Robj")
+load( file="../../out/cell-lines/ParetoTI/arc_rob.Robj")
+load( file="../../out/cell-lines/ParetoTI/arc_ave.Robj")
 ```
 
 ```{r}
@@ -391,12 +394,13 @@ save(activ_pi, file="../../out/cell-lines/ParetoTI/activ_pi.Robj")
 
 
 data_attr = merge_arch_dist(arc_data = arc_ave, data = x_pca, 
-                            feature_data = as.matrix(data[['RNA']]@scale.data),
-                            colData = activ_pi, 
+                            feature_data = as.matrix(rna),
+                            # colData = activ_pi, 
                             dist_metric = c("euclidean", "arch_weights")[1],
                             colData_id = "cells", rank = F) 
 save(data_attr, file="../../out/cell-lines/ParetoTI/data_attr.Robj")
-
+# distances = data_attr$data[,c('sample_id','archetype_1','archetype_2','archetype_3','archetype_4')]
+# write.csv(distances, '../../out/cell-lines/ParetoTI/distances.csv')
 
 
 enriched_genes = find_decreasing_wilcox(data_attr$data, data_attr$arc_col,
