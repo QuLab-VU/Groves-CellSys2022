@@ -7,4 +7,4 @@ from ._archetype_plots import (
 )
 from ._utils import umap_update
 from ._network_plots import network_graph, attractor_heatmap
-from ._circular_projection import circular_projection
+from ._circular_projection import cap_plot

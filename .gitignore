@@ -24,3 +24,5 @@ notebooks/out/cell-lines/ParetoTI/obsolete-with-doublets/integrated-corrected-da
 notebooks/out/human-tumors/ParetoTI/integrated-corrected-data.csv
 notebooks/out/TKO-tumors/ParetoTI/integrated-corrected-data.csv
 notebooks/out/human-tumors/obsolete/integrated-corrected-data.csv
+notebooks/out/RPM-time-series/ParetoTI/integrated-corrected-data.csv
+notebooks/out/PDX-tumors/ParetoTI/integrated-corrected-data.csv

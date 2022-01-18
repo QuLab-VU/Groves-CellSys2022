@@ -8,6 +8,114 @@ from scvelo.preprocessing.moments import get_connectivities
 import seaborn as sns
 from sklearn.utils import resample
 from scipy.stats import entropy
+import random
+from scipy.stats import percentileofscore as POS
+from statsmodels.stats import multitest
+
+
+def permutation_enrichment_test(
+    adata,
+    score,
+    arc_label="specialists_ParetoTI_S",
+    n_permutations=1000,
+    plot=True,
+    stat="median",
+    verbose=True,
+    sample_equally=None,
+    correction=None,
+):
+    score_tmp = score.copy()
+    if score_tmp.isna().sum().sum() > 0:
+        print(
+            "Warning: you have NAs in your score matrix. Ignoring NAs for calculation of statistic."
+        )
+    score_tmp["spec"] = adata.obs[arc_label]
+    mean_by_arc = score_tmp.groupby("spec").mean().idxmax(axis=1)
+    p_values = pd.DataFrame(
+        columns=score.columns, index=adata.obs[arc_label].cat.categories
+    )
+    for cat in adata.obs[arc_label].cat.categories:
+        print(f"Archetype: {cat}")
+        closest = list(adata[adata.obs[arc_label] == cat].obs_names)
+        far = list(adata[adata.obs[arc_label] != cat].obs_names)
+        if verbose:
+            print(
+                f"Bulk archetype with highest average score at archetype {cat}: {mean_by_arc[cat]}"
+            )
+
+        for s in score.columns:
+            median_specialists = score.loc[closest, s].median(skipna=True)
+            median_non = score.loc[far, s].median(skipna=True)
+            mean_specialists = score.loc[closest, s].mean(skipna=True)
+            mean_non = score.loc[far, s].mean(skipna=True)
+            random_medians = []
+            for r in range(n_permutations):
+                if type(sample_equally) == type(None):
+                    random_cells = random.choices(score.loc[far, s], k=len(closest))
+                else:
+                    n_sample_each = int(
+                        np.floor(
+                            len(closest) / len(np.unique(adata.obs[sample_equally]))
+                        )
+                    )
+                    score_tmp[sample_equally] = adata.obs[sample_equally]
+                    random_cells = (
+                        score_tmp.loc[far]
+                        .groupby(sample_equally)
+                        .sample(n_sample_each, replace=True)[s]
+                    )
+
+                # print(np.median(random.choices(score.loc[far, s], k=len(closest))))
+                if stat == "median":
+                    random_medians.append(np.nanmedian(random_cells))
+                elif stat == "mean":
+                    random_medians.append(np.nanmean(random_cells))
+            if plot:
+                sns.distplot(random_medians, color="orange", rug=True, hist=False)
+
+                if stat == "median":
+                    plt.vlines(
+                        x=median_specialists,
+                        ymin=plt.ylim()[0],
+                        ymax=plt.ylim()[1],
+                        colors="k",
+                    )
+                elif stat == "mean":
+                    plt.vlines(
+                        x=mean_specialists,
+                        ymin=plt.ylim()[0],
+                        ymax=plt.ylim()[1],
+                        colors="k",
+                    )
+
+                plt.title(f"{s} enrichment at {cat}")
+                plt.show()
+            # sns.kdeplot(score.loc[closest, s], color = 'red')
+            # sns.kdeplot(score.loc[far, s], color = 'blue')
+            # plt.show()
+
+            if stat == "median":
+                p_val = 1 - POS(random_medians, median_specialists) / 100
+
+            elif stat == "mean":
+                p_val = 1 - POS(random_medians, mean_specialists) / 100
+            print(f"\t p-value for {s}: {p_val}")
+            p_values.loc[cat, s] = p_val
+
+            if verbose:
+                print(f"\t Fold change in mean for {s}: {mean_specialists/mean_non}")
+    if type(correction) == type(None):
+        return p_values
+    else:
+        p_values["id"] = p_values.index
+        p_values_melt = p_values.melt(id_vars="id", value_vars=p_values.columns)
+        p_values_melt["corr_p"] = multitest.multipletests(
+            p_values_melt["value"], method=correction
+        )[1]
+        p_values_corrected = p_values_melt.pivot(
+            index="id", columns="variable", values="corr_p"
+        )
+        return p_values_corrected, p_values
 
 
 def lstsq_scoring(

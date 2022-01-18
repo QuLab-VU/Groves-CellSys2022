@@ -5,6 +5,7 @@ import scanpy as sc
 # from _settings import settings
 import numpy as np
 import scrublet
+import matplotlib.pyplot as plt
 
 
 def dropkick_filter(adata, filter=True, verbose=False, plot=True):
@@ -168,18 +169,42 @@ def scanpy_recipe(adata, retain_genes, min_genes=100, min_cells=3):
     return adata
 
 
-def doublet_detections(adata, copy=False, layer="raw_counts"):
+def doublet_detections(
+    adata, copy=False, layer="raw_counts", plot=False, log_transform=False
+):
     if copy:
         _adata = adata.copy()
         counts = _adata.layers[layer]
         scrub = scrublet.Scrublet(counts)
-        doublet_scores, predicted_doublets = scrub.scrub_doublets()
+        doublet_scores, predicted_doublets = scrub.scrub_doublets(
+            log_transform=log_transform
+        )
         _adata.obs["doublet_scores"] = doublet_scores
         _adata.obs["predicted_doublets"] = predicted_doublets
         return _adata
     else:
         counts = adata.layers[layer]
         scrub = scrublet.Scrublet(counts)
-        doublet_scores, predicted_doublets = scrub.scrub_doublets()
+        doublet_scores, predicted_doublets = scrub.scrub_doublets(
+            log_transform=log_transform
+        )
         adata.obs["doublet_scores"] = doublet_scores
         adata.obs["predicted_doublets"] = predicted_doublets
+    if plot:
+        scrub.plot_histogram()
+        print("Running UMAP...")
+        scrub.set_embedding(
+            "UMAP", scrublet.get_umap(scrub.manifold_obs_, 10, min_dist=0.3)
+        )
+
+        # # Uncomment to run tSNE - slow
+        # print('Running tSNE...')
+        # scrub.set_embedding('tSNE', scr.get_tsne(scrub.manifold_obs_, angle=0.9))
+
+        # # Uncomment to run force layout - slow
+        # print('Running ForceAtlas2...')
+        # scrub.set_embedding('FA', scr.get_force_layout(scrub.manifold_obs_, n_neighbors=5. n_iter=1000))
+
+        print("Done.")
+        scrub.plot_embedding("UMAP", order_points=True)
+        plt.show()
