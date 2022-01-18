@@ -10,6 +10,7 @@ from sklearn.utils import resample
 from scipy.stats import entropy
 import random
 from scipy.stats import percentileofscore as POS
+from statsmodels.stats import multitest
 
 
 def permutation_enrichment_test(
@@ -20,6 +21,8 @@ def permutation_enrichment_test(
     plot=True,
     stat="median",
     verbose=True,
+    sample_equally=None,
+    correction=None,
 ):
     score_tmp = score.copy()
     if score_tmp.isna().sum().sum() > 0:
@@ -47,7 +50,21 @@ def permutation_enrichment_test(
             mean_non = score.loc[far, s].mean(skipna=True)
             random_medians = []
             for r in range(n_permutations):
-                random_cells = random.choices(score.loc[far, s], k=len(closest))
+                if type(sample_equally) == type(None):
+                    random_cells = random.choices(score.loc[far, s], k=len(closest))
+                else:
+                    n_sample_each = int(
+                        np.floor(
+                            len(closest) / len(np.unique(adata.obs[sample_equally]))
+                        )
+                    )
+                    score_tmp[sample_equally] = adata.obs[sample_equally]
+                    random_cells = (
+                        score_tmp.loc[far]
+                        .groupby(sample_equally)
+                        .sample(n_sample_each, replace=True)[s]
+                    )
+
                 # print(np.median(random.choices(score.loc[far, s], k=len(closest))))
                 if stat == "median":
                     random_medians.append(np.nanmedian(random_cells))
@@ -56,7 +73,6 @@ def permutation_enrichment_test(
             if plot:
                 sns.distplot(random_medians, color="orange", rug=True, hist=False)
 
-                plt.ymin = np.max([plt.ymin, 0])
                 if stat == "median":
                     plt.vlines(
                         x=median_specialists,
@@ -88,7 +104,18 @@ def permutation_enrichment_test(
 
             if verbose:
                 print(f"\t Fold change in mean for {s}: {mean_specialists/mean_non}")
-    return p_values
+    if type(correction) == type(None):
+        return p_values
+    else:
+        p_values["id"] = p_values.index
+        p_values_melt = p_values.melt(id_vars="id", value_vars=p_values.columns)
+        p_values_melt["corr_p"] = multitest.multipletests(
+            p_values_melt["value"], method=correction
+        )[1]
+        p_values_corrected = p_values_melt.pivot(
+            index="id", columns="variable", values="corr_p"
+        )
+        return p_values_corrected, p_values
 
 
 def lstsq_scoring(
