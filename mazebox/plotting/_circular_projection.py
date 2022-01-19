@@ -38,6 +38,7 @@ def cap_plot(
         "SCLC-N_Score_pos": "green",
         "SCLC-Y_Score_pos": "purple",
     },
+    save=None,
 ):
 
     probabilities = probabilities.dropna()
@@ -81,6 +82,7 @@ def cap_plot(
         sns.kdeplot(
             x, y, hue=hue.loc[probabilities.index], alpha=0.5, fill=fill, levels=levels
         )
-
+    if type(save) != type(None):
+        plt.savefig(f"./figures/{save}")
     plt.show()
     return best_perm
