@@ -1,0 +1,289 @@
+TARGET,DRUGS
+5-FU,Capecitabine
+5-HT,Paroxetine
+5-HT RECEPTOR,Anafranil
+7-TM RECEPTORS,Terfenadine
+ABL,"Imatinib, Nilotinib, Ponatinib"
+ABL1,"Bosutinib, AZD-0530, Imatinib, Nilotinib"
+ADA,Pentostatin
+ADORA2A,Mefloquine
+ADRB1,Metoprolol
+ADRB2,Metoprolol
+AFR,ONX-0801
+AHR,"AFP-464, Aminoflavone"
+AKT,"AT-13148, AZD-5363, CCT-128930, GDC-0068, GSK-690693 , KRX-0401, MK-2206, OSU-03013, PF-04691502"
+AKT1,Arsenic Trioxide
+ALAD,Aminolevulinic acid
+ALK,"Ariad Alk_EGFR inhibitor related to AP-26113, Crizotinib, ASP-3026, Cephalon Early Alk Inhibitor, CH-5424802, CH-5428402 HCl, GSK-1838705A, TAE-684"
+ALK5,SB-431542 
+ANTHELMINTIC,Pyrvinium pamoate
+ANTIBIOTIC,"Gramicidin, Tazobactam, Tyrothricin, Plicamycin, Bleomycin"
+ANTIFOLATE,"AG-2037, Pelitrexol isomer A, Pelitrexol isomer B, Methotrexate, ZD-1694, Pemetrexed"
+ANTIFUNGAL,Itraconazole
+AR,"ARN-509, AZD-3514, Enzalutamide, Mitotane, Pipamperone"
+ARAF,MLN-2480
+ATM,"VE-821, Wortmannin"
+ATR,"Vertex ATR inhibitor Cpd 45, VE-821, Wortmannin"
+AURKA," AS-703569 , ABT-348, AMG-900, CYC-116, ENMD-2076, ENMD-2076 Precursor, KW-2449, MK-5108, MLN-8237 , SCH-1473759, SNS-314, TAK-901, AZD-1480"
+AURKB," AS-703569 , ABT-348, AMG-900, analog of S-49076, AZD-1152, CYC-116, ENMD-2076, ENMD-2076 Precursor, MLN-8237 , SCH-1473759, SL-0101, SNS-314, TAK-901, AT-9283"
+AURKC," AS-703569 , ABT-348, AMG-900, CYC-116, SNS-314, TAK-901"
+AXL,"analog of S-49076, BMS-777607, XL-541, Cabozantinib, LY-2801653, R-428"
+BAZ2A,Pralatrexate
+BAZ2B,Pralatrexate
+BCL2,"ABT-199, ABT-263, ABT-737 , AT-101; BL-193, BAM7, GX15-070"
+BCL2L1,"ABT-263, ABT-737 "
+BCL2L2,ABT-737 
+BCLW,ABT-263
+BCLXL,ABT-263
+BCR,"Imatinib, isomer of bafetinib, Nilotinib"
+BCR-ABL,"KW-2449, AZD-0530, Dasatinib, Imatinib, Nilotinib, Ponatinib"
+BET,"(+)-JQ1, BI-2536, GSK-1210151A"
+BETA-CATENIN,"ICG-001, IWR-1, PNU-74654, XAV-939 "
+BFGF,Lenalidomide
+BIRC5,"SR-13654, YM-155"
+BONE RESORPTION,"Zolendronic acid, MK-0822"
+BRAF," Dabrafenib, ARQ-680, MLN-2480, PLX-4720, RAF-265, SB-590885, Sorafenib, Targegen B-Raf_PDGFR inhibitor Cpd 6, Vemurafenib, RO-5126766, Regorafenib"
+BRD2,"(+)-JQ1, GSK-1210151A"
+BRD3,"(+)-JQ1, GSK-1210151A"
+BRD4,"(+)-JQ1, GSK-1210151A"
+BRD6,(+)-JQ1
+BTK,Ibrutinib
+C-FMS,OSI-930 
+C-KIT,"AMG-706, ASP-4130, Axitinib, Cabozantinib, CHIR-258, Dasatinib, ITRI-260, MP-470, OSI-930 , Regorafenib"
+CAN,Tacrolimus
+CCND1,Arsenic Trioxide
+CDH11,Celecoxib
+CDK," BMS-387032, AT-7519, CYC-202, Flavopiridol, LY-2835219, MK-7965, NU-6027, Palbociclib, R-547, SB-1317, 10058-F4"
+CDK1,MK-7965
+CDK16, BMS-387032
+CDK17, BMS-387032
+CDK2," BMS-387032, MK-7965"
+CDK4,Palbociclib
+CDK5,MK-7965
+CDK6,Palbociclib
+CDK7, BMS-387032
+CDK9," BMS-387032, AT-7519"
+CDKL5, BMS-387032
+CFTR,Ivacaftor
+CHEMOSENSITIZING,PCI-0120
+CHK,LY-2603618
+CHK1,"AZD-7762 , LY-2606368, PF-477736, SCH-900776 "
+CHK2,"AZD-7762 , BML-277, LY-2606368"
+CIAP1,AEG-40730 
+CIAP2,AEG-40730 
+CK2,CX-4945
+CK2A2,CX-4945
+CMPK1,Gemcitabine
+CMYC,"10058-F4, 10074-G5"
+COX,Meclofenamate
+COX1,Celecoxib
+COX2,"Celecoxib, Diclofenac, Fenoprofen, Flurbiprofen"
+CRAF,"GW-5074, MLN-2480, PLX-4720, RAF-265, ZM-336372, RO-5126766"
+CRM1,"KPT-185, KPT-251"
+CSF1,JNJ-28312141
+CSF1R,"BLZ-945, ONX-0803, AC-220"
+CSK9,MK-7965
+CXCR4,Plerixafor
+CYP17A1,"Abiraterone, TAK-700"
+CYP19A1,Anastrozole
+CYP2C9,Nitisinone
+D1AR,Fluphenazine
+D2R,"Fluphenazine, Chlorpromazine, Pimozide"
+D3R,Pimozide
+DHFR,"Pralatrexate, Methotrexate"
+DHODH,Teriflunomide
+DHT,Finasteride
+DNA ALKYLATOR,"Triethylenemelamine, Altretamine, AMD-473, Bendamustine, Busulfan, Carboplatin, Carmustine, Cyclophosphamide, E-7850, Ifosfamide, Lomustine, Melphalan, Mitomycin C, Oxaliplatin, Pipobroman, Streptozocin, Temozolomide, Thiotepa, Uracil mustard, Dacarbazine, Nitrogen mustard, Procarbazine, Cisplatin, Chlorambucil"
+DNAPK,"PI-103, Wortmannin"
+DNMT,"Decitabine, Azacitidine"
+EGFR,"AEE-788 , Afatinib, Ariad Alk_EGFR inhibitor related to AP-26113, AZD-8931, Erlotinib, Gefitinib, Lapatinib, PF-0528767, PF-299804, R-788, Vandetanib, Varlitinib, WZ-4002, BMS-690514"
+EHMT1,UNC-0638
+EHMT2,UNC-0638
+EPHA2,"Dasatinib, JI-101"
+ER,"Exemestane, Fulvestrant, Letrozole, Mitotane, Raloxifene, Tamoxifen"
+ERG,YK-4-279
+ERK,RG-7167
+ERK1,"SC-1, AZD-6244"
+ERK2,YC-1
+ESR1,Tamoxifen
+ESR2,Tamoxifen
+ETV1,YK-4-279
+FAAH,"BIA, JZL-195"
+FAK,PF-562271
+FAS,C-75
+FGFR,"AZD-4547, ENMD-2076, ENMD-2076 Precursor, KW-2449, analog of S-49076, MK-2461, Astex FGF inhibitor, BGJ-398, BIBF-1120, BMS-582664 , CHIR-258, LY-2874455, PD-173074, Ponatinib"
+FKBP,Tacrolimus
+FLT,"AEE-788 , AC-220, AZD-2171, Cabozantinib, CHIR-258, MP-470, Ponatinib, R-406"
+FLT1," Pazopanib, ABT-869, ASP-4130, AZD-2171, BIBF-1120, Cabozantinib, Lenvatinib"
+FLT3,"ENMD-2076, ENMD-2076 Precursor, KW-2449, CEP-701, ONX-0803, SB-1317,  Pazopanib, ABT-869, AC-220, ASP-4130, BIBF-1120, BPR1J-097, Cabozantinib, ITRI-260, Lenvatinib, MLN-518, MP-470, Ponatinib, Sunitinib"
+FLT4,"AZD-2171, Cabozantinib"
+FMS,PF-477736
+FRAP,"AZD-2014, Rapamycin"
+FTI,R-115777
+G9A,UNC-0638
+GAK,CH-5424802
+GAMMA-SECRETASE,"BMS-708163, LY-450139, PF-03084014 diastereomer 1, PF-03084014 diastereomer 2, RG-4733, BMS-299897, MK-0752"
+GARFT,"AG-2037, Pelitrexol isomer A, Pelitrexol isomer B"
+GLI,SEN-450
+GLP,UNC-0638
+GLUCL,Ivermectin
+GNAQ,BIM-46187 
+GSK3,"AZD-2858, LY-2090314"
+H1HR,Terfenadine
+H2HR,Ranitidine
+HBA1,Mefloquine
+HDAC,"4SC-202 , ACY-1215, JNJ-26481585, MG-0103, MS-275, Panobinostat, PCI-24781, SB-939, ST-3595, Vorinostat, CUDC-907"
+HDAC1,"Belinostat, Depsipeptide, MS-275, Panobinostat, Vorinostat"
+HDAC2,"Belinostat, Depsipeptide, MS-275, Panobinostat, Vorinostat"
+HDAC3,"Belinostat, Depsipeptide, MS-275, Panobinostat, Vorinostat"
+HDAC6,"Belinostat, MS-275, Panobinostat, Vorinostat"
+HDAC8,"Belinostat, Depsipeptide, MS-275, Panobinostat, Vorinostat"
+HDM2,MI-219
+HEDGEHOG,"HPI-1, LY-2940680, Vismodegib"
+HEMATOPOIESIS ,BPR1J-097
+HER2,"AEE-788 , Afatinib, ARRY-380, Erlotinib, Lapatinib, BMS-599626"
+HER4,Afatinib
+HIF1A,"YC-1, AFP-464, Dactinomycin"
+HK2,3-Bromopyruvic acid
+HLGP,CP-91149
+HMGCR,"Fluvastatin, Simvastatin, Simvastin"
+HMTASE,UNC-0638
+HPD,Nitisinone
+HSF1,2-Fluoroadenosine
+HSP90,"PF-04929113, 17-AAG, 17-DMAG, AT-13387 , AUY-922, By-Product of CUDC-305, CNF-2024, CUDC-305, MPC-3100, PF-4942847, STA-9090, XL-888"
+HSP90AA1,"17-AAG, AT-13387 "
+HTT,Dactinomycin
+IAP,"AT-406, GDC-0152, LCL-161, TL-32711"
+IDH1,"IDH-C35, IDH-C227"
+IDO,1-Methyl-[D]-tryptophan
+IGF1R,"Tamoxifen, ADW-742, AEW-541, ASP-7487, BMS-536924, BMS-754807, GSK-1838705A, GSK-1904529A"
+IKK,EB-1627
+IL2,Tacrolimus
+IMPDH,AVN-944
+INDUCTION OF KLF4,isomer of LOR-253
+INHIBITOR OF IL2,CK-0238273
+INSR,BMS-536924
+INSULIN RECEPTOR,"BMS-536924, BMS-754807, GSK-1838705A"
+INTEGRIN,Peptide [CRGDKGPDC - cys & cys bridge
+ION TRANSPORT,Lithium Carbonate
+IRAK1,ONX-0803
+JAK1,"AZD-1480, CYT-387"
+JAK2,"AT-9283, AZD-1480, CEP-701, CYT-387, LY-2784544, ONX-0803, SAR-302503, SB-1317, SB-1578, WP-1034, XL-019, BMS-911543"
+JANUS,Ruxolitinib
+JNK,"SP-600125, TLK-199"
+JUN,Arsenic Trioxide
+KDR,"RAF-265,  Pazopanib, ABT-869, ASP-4130, AZD-2171, BIBF-1120, Cabozantinib, Lenvatinib, OSI-930 , Regorafenib, Sunitinib"
+KDR ,Vandetanib
+KHK,KHK Indazole
+KIF11,"ARQ-621, EMD-534085, SB-743921"
+KIT," Pazopanib, AB-1010, AC-220, Dasatinib, Imatinib, Lenvatinib, Nilotinib, OSI-930 , Regorafenib, Sunitinib"
+KSP,"ARRY-520 (isomer A), ARRY-520 (isomer B)"
+LCK,Dasatinib
+LDHA,LDHA Cmp 33
+LPAAT-B,CT-32228
+LTK,CH-5424802
+MAPK1,Arsenic Trioxide
+MAPK3,Arsenic Trioxide
+MDM2,"RG-7112, JNJ-27291199"
+MEK,"Trametinib, ARRY-162, AS-703026, AZD-6244, AZD-8330, BAY-86-9766, PD-0325901, PD-184352, PD-98059, RG-7167, RO-5126766, TAK-733, XL-518 (isomer 1), XL-518 (isomer 2)"
+MET,"analog of S-49076, AMG-208, AMG-458, ARQ-197, BMS-777607, Crizotinib, EMD-1204831, EMD-1214063, JNJ-38877605, MK-2461, MK-8033 , PF-04217903, PHA-665752, SAR-125844, SGX-523, XL-541, XL-880, Cabozantinib, MP-470"
+MGLL,"JZL-184, JZL-195"
+MTOR,"AZD-2014, AZD-8055, BEZ-235, BGT-226, CH-5132799 , Everolimus , GDC-0980, GSK-2126458, INK-128, KD-032, MK-8669 , OSI-027, PF-04691502, PF-05212384, PI-103, PP-242, Rapamycin, RG-7603"
+MTORC1,AZD-8055
+MTORC2,AZD-8055
+NAE1,MLN-4924
+NAMPT,AP0-866
+NCSTN,LY-450139
+NEUROPHILIN1,Peptide [CRGDKGPDC - cys & cys bridge
+NFKB,"EB-1627, Arsenic Trioxide"
+NOS1,Tacrolimus
+NRDA,Cladribine
+NTRK1,CEP-701
+NUCLEOSIDE METABOLISM,"Thioguanine, Decitabine, Gemcitabine, Azacitidine, Clofarabine, Cytarabine, Floxuridine, Fludarabine, Fluorouracil, Mercaptopurine, Arabinoside"
+O6-ALKYLGUANINE DNA ALKYLTRANSFERASE,O6-BG
+P38MAPK,"SB-203580, LY-2228820, SB-239063"
+P53,"RG-7112,  1st Precursur Intermediate to TDP 665759, 2nd Precursur Intermediate to TDP 665759"
+PARP,"ABT-888, AZD-2461, BMN-673, BMN-673 (inactive enantiomer), BMN-673 (racemate), BSI-201, CEP-9722, MK-4827, Olaparib, PF-01367338"
+PDE,Sildenafil
+PDGFR,"ABT-348, Sorafenib, Targegen B-Raf_PDGFR inhibitor Cpd 6, MK-2461,  Pazopanib, ABT-869, AC-220, AMG-706, ASP-4130, Axitinib, BIBF-1120, CHIR-258, CP-868596, Dasatinib, JI-101, Lenvatinib, MP-470, OSI-930 , Ponatinib, SU-6668, Sunitinib"
+PDH,CPI-613
+PDK1,"BX-912, GSK-2334470, OSU-03012 "
+PGP,LNS-5662
+PI3K,"CUDC-907, Idelalisib, BAY-80-6946 , BEZ-235, BGT-226, BKM-120, BYL-719, CH-5132799 , GDC-0941, GDC-0980, GSK-2126458, GSK-2636771, INK-1197, LY-294002, ON-01910Na, PF-04691502, PI-103, PI-103, PX-866, Wortmannin, XL-147, XL-765, ZSTK-474"
+PI3KCA,BYL-719
+PI3KCB,GSK-2636771
+PIK3CA,"BEZ-235, GDC-0941, PI-103"
+PIK3CB,"BEZ-235, GDC-0941, PI-103, ZSTK-474"
+PIK3CD,"BEZ-235, GDC-0941, PI-103, ZSTK-474"
+PIK3CG,"BEZ-235, GDC-0941, PI-103, ZSTK-474"
+PIM,SGI-1776
+PIM3,SL-0101
+PKA,H-89
+PKC,"AEB-071, CX-4945, LY-317615"
+PLA2,Acrichine
+PLK,MLN-0905
+PLK1,"BI-6727, GSK-461364, TAK Plk inhibitor, TAK-960, BI-2536, Des-fluoro-TAK-960, TAK-960 analog"
+PLK2,BI-2536
+PLK3,BI-2536
+PMK2,PKM2 Activator 9
+PPAR,CS-7017
+PROGESTIN,"Megestrol acetate, Mitotane, Raloxifene"
+PROTEASOME,"Bortezamide, Carfilzomib, ONX-0912  , ONX-0914, MLN-2238, MLN-9708"
+PSEN1,"LY-450139, RG-4733"
+PSENEN,"LY-450139, RG-4733"
+PSMB5,"CEP-18770, MLN-2238"
+QUINONE,Teriflunomide
+R132H,IDH-C227
+RADIOSENSITIZING,PCI-0120
+RAF,Regorafenib
+RAF1,GW-5074
+RARA,Tretinoin
+RAS,KD-032
+RASGAP,SC-1
+RET,"Vandetanib, CEP-701, XL-541, AC-220, Cabozantinib, MP-470, Regorafenib"
+RHA,YK-4-279
+RNR,"Hydroxyurea, 3-AP"
+ROCK1,Y-27632
+ROCK2,Y-27632
+RORC,Dactinomycin
+RPL3,Omacetaxine mepasuccinate
+RRM1,Gemcitabine
+RSK,"SL-0101, LY-2606368"
+RTC1,Pralatrexate
+RTK,"ABT-869, VX-322"
+RXR,Tretinoin
+S6 KINASE,H-89
+SDF1A,Plerixafor
+SMAC,LCL-161
+SMAD,LY-2109761
+SMN1,YC-1
+SMO,"IPI-926, LDE-225, LDE-225, diphosphonate salt, LEQ-506, LY-2940680, TAK-441"
+SODIUM CHANNEL,Digoxin
+SRC,"Bosutinib, KX2-391, SR-13654, ENMD-2076, ENMD-2076 Precursor, AZD-0530, Dasatinib"
+STAT3,"BP-1-102, oxazole STAT3 inhibitor"
+SUPEROXIDE RADICALS,"Amifostine, Dexrazoxone"
+SYK,"BAY 61-3606, R-406"
+TGF-B,"LY-2109761, LY-2157299, SB-431542 "
+TIE2,Cabozantinib
+TLR,"Imiquimod, SCV-07"
+TLR7,Imiquimod
+TNFA,Lenalidomide
+TOPO1,"7-Ethyl-10-hydroxycamptothecin, GENZ-644282, Irinotecan, Mitoxantrone, MLN-576, SNS-595; SPC-595, Topotecan, XR-5000, XR-5944"
+TOPO2,"Daunorubicin, Doxorubicin, Etoposide, GENZ-644282, Irinotecan, Mitoxantrone, MLN-576, SNS-595; SPC-595, Teniposide, Valrubicin, XK-469, XR-5000, XR-5944"
+TTX SENSITIVE NA CHANNELS,Riluzole
+TUBULIN,"BAL-101553, BAL-27862, Cabazitaxel, CYT-997, Docetaxel, EP-90745, Ixabepilone, Paclitaxel, Vinblastine, Vincristine, Vinorelbine, Estramustine"
+TYMS,"Gemcitabine, ZD-1694, Pemetrexed, ONX-0801"
+UBB,Ixabepilone
+UNKNOWN,"EMD-121974, OT-674, CGX-571, Ciprofloxacin, Bosutinib isomer,  ZIP-301, Agios Cmp 301, Asorbic Acid, CB-64D, CO-101, Cpd-401, enantiomer of PF-4176340, FAU, Hydrastinine HCl, Methoxsalen, MP-0922, peptide R18 (14-3-3 antagonist), PF-4176340, Thalidomide, AM-2282"
+UOX,Oxonic Acid
+VEGF,"Lenalidomide, AMG-706"
+VEGFR,"YN-968D1, ABT-348, CYC-116, ENMD-2076, ENMD-2076 Precursor, PF-477736, AEE-788 , Vandetanib, RAF-265, Sorafenib, XL-541, XL-880,  Pazopanib, ABT-869, ASP-4130, Axitinib, AZD-2171, BGJ-398, BIBF-1120, BMS-582664 , Cabozantinib, CGP-79787D, CHIR-258, JI-101, Lenvatinib, OSI-930 , PD-173074, Ponatinib, R-1530, Regorafenib"
+VKORC1,Warfarin
+VOLTAGE GATED CALCIUM CHANNELS,Gabapentin
+WEE1,MK-1775 
+WNT,"ICG-001, IWR-1, PNU-74654, VS-507, XAV-939 "
+XIAP,AEG-40730 
+XO,Allopurinol
+XPO1,"KPT-185, KPT-251"
+YES,PF-477736
+YES1,Dasatinib

@@ -23,6 +23,9 @@ def permutation_enrichment_test(
     verbose=True,
     sample_equally=None,
     correction=None,
+    figsize=(3, 2),
+    dpi=200,
+    save=None,
 ):
     score_tmp = score.copy()
     if score_tmp.isna().sum().sum() > 0:
@@ -71,6 +74,7 @@ def permutation_enrichment_test(
                 elif stat == "mean":
                     random_medians.append(np.nanmean(random_cells))
             if plot:
+                plt.figure(figsize=figsize, dpi=dpi)
                 sns.distplot(random_medians, color="orange", rug=True, hist=False)
 
                 if stat == "median":
@@ -89,6 +93,8 @@ def permutation_enrichment_test(
                     )
 
                 plt.title(f"{s} enrichment at {cat}")
+                if type(save) != type(None):
+                    plt.savefig(f"./figures/{cat}_{s}_{save}")
                 plt.show()
             # sns.kdeplot(score.loc[closest, s], color = 'red')
             # sns.kdeplot(score.loc[far, s], color = 'blue')
