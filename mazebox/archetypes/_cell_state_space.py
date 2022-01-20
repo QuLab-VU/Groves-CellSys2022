@@ -14,7 +14,8 @@ import numpy.random as nr
 import matplotlib.pyplot as plt
 import scanpy as sc
 import seaborn as sns
-import mazebox.plotting._archetype_plots as archetype_plots
+
+# import mazebox.plotting._archetype_plots as archetype_plots
 
 seed(1)
 

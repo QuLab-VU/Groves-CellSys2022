@@ -39,6 +39,8 @@ def cap_plot(
         "SCLC-Y_Score_pos": "purple",
     },
     save=None,
+    legend=True,
+    set_style="white",
 ):
 
     probabilities = probabilities.dropna()
@@ -72,15 +74,23 @@ def cap_plot(
     # archetype locations
     x_arc = np.cos(np.radians([ang_dict[o] for o in best_perm]))
     y_arc = np.sin(np.radians([ang_dict[o] for o in best_perm]))
-
+    sns.set_style(set_style)
     plt.figure(figsize=(10, 10))
     if plot_type == "scatterplot":
-        sns.scatterplot(x, y, s=60, alpha=0.5, hue=hue.loc[probabilities.index])
+        sns.scatterplot(
+            x, y, s=60, alpha=0.5, hue=hue.loc[probabilities.index], legend=legend
+        )
         sns.scatterplot(x_arc, y_arc, s=100, c=[arc_hue_dict[i] for i in best_perm])
     elif plot_type == "kde":
         sns.scatterplot(x_arc, y_arc, s=100, c=[arc_hue_dict[i] for i in best_perm])
         sns.kdeplot(
-            x, y, hue=hue.loc[probabilities.index], alpha=0.5, fill=fill, levels=levels
+            x,
+            y,
+            hue=hue.loc[probabilities.index],
+            alpha=0.5,
+            fill=fill,
+            levels=levels,
+            legend=legend,
         )
     if type(save) != type(None):
         plt.savefig(f"./figures/{save}")
