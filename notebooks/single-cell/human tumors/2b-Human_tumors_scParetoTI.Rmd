@@ -257,11 +257,15 @@ reconstruct_from_pca <- function(x, loadings, arc_XC, nComp = 11){
 x_recon <- reconstruct_from_pca(x, loadings, x_pca)
 arc_genespace <- reconstruct_from_pca(x = x, loadings = loadings, arc_XC = t(arc_ave$XC))
 write.csv(t(arc_genespace), '../../out/human-tumors/ParetoTI/arc_gene-space.csv')
+```
+
+```{r}
 ##################################
 # 
-# load(file="../int/single-cell/arc.Robj")
+load(file="../../out/human-tumors/ParetoTI/arc.Robj")
 # load( file="../int/single-cell/arc_rob.Robj")
 # load( file="../int/single-cell/arc_ave.Robj")
+write.csv(t(arc$S), '../../out/human-tumors/ParetoTI/S.csv')
 
 Idents(object = data) <- data@meta.data$tumor #add cell line labels
 
@@ -360,7 +364,9 @@ data_attr = merge_arch_dist(arc_data = arc_ave, data = x_pca,
                             colData_id = "cells", rank = F) 
 save(data_attr, file="../../out/human-tumors/ParetoTI/data_attr.Robj")
 
-
+# load("../../out/human-tumors/ParetoTI/data_attr.Robj")
+distances = data_attr$data[,c('sample_id','archetype_1','archetype_2','archetype_3')]
+write.csv(distances, '../../out/human-tumors/ParetoTI/distances.csv')
 
 enriched_genes = find_decreasing_wilcox(data_attr$data, data_attr$arc_col,
                                 features = data_attr$features_col,

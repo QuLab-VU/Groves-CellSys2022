@@ -325,7 +325,10 @@ This will be especially interesting for comparing archetypes 4 and 5, since it i
 
 ```{r}
 library(matrixStats)
-
+load(file="../../out/PDX-tumors/ParetoTI/arc.Robj")
+# load( file="../int/single-cell/arc_rob.Robj")
+# load( file="../int/single-cell/arc_ave.Robj")
+write.csv(t(arc$S), '../../out/PDX-tumors/ParetoTI/S.csv')
 # x.orig <- as.matrix(data[['RNA']]@data)
 # 
 # rownames(x.orig)<-gsub("-", ".", rownames(x.orig))

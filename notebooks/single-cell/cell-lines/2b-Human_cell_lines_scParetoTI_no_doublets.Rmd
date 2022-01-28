@@ -161,7 +161,8 @@ library(ggfortify)
 library(cluster)
 # install.packages("data.table")
 ##################################
-# load(file="../../out/cell-lines/ParetoTI/X_magic_for_ParetoTI.Robj")
+load(file="../../out/cell-lines/ParetoTI/X_magic_for_ParetoTI.Robj")
+
 top_pcs = 11
 x <- data[["RNA"]]@scale.data
 
