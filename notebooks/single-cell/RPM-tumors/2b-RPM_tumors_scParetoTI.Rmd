@@ -161,7 +161,7 @@ library(ggfortify)
 library(cluster)
 # install.packages("data.table")
 ##################################
-# load(file="../../out/cell-lines/ParetoTI/X_magic_for_ParetoTI.Robj")
+load(file="../../out/RPM-time-series/ParetoTI/X_magic_for_ParetoTI.Robj")
 
 x <- data[["RNA"]]@scale.data
 
@@ -291,15 +291,15 @@ write.csv(arc$S, '../../out/RPM-time-series/ParetoTI/S.csv')
 ```{r}
 ##################################
 # 
-# load(file="../int/single-cell/arc.Robj")
-# load( file="../int/single-cell/arc_rob.Robj")
-# load( file="../int/single-cell/arc_ave.Robj")
+load(file="../../out/RPM-time-series/ParetoTI/arc.Robj")
+load( file="../../out/RPM-time-series/ParetoTI/arc_rob.Robj")
+load( file="../../out/RPM-time-series/ParetoTI/arc_ave.Robj")
 
 Idents(object = data) <- data@meta.data$timepoint #add cell line labels
 
 cols <- c(brewer.pal(9, "Set1"),'gray')
 
-plot_arc(arc_data = arc, data = x_pca,
+plot_arc(arc_data = arc_labeled, data = x_pca,
                    which_dimensions = 1:2,colors = cols,
                   data_lab = as.character(Idents(data))) + theme_bw()
 p_pca = plot_arc(arc_data = arc, data = x_pca, 
@@ -346,6 +346,19 @@ plotly::layout(p_pca, title = "Expression of MYC in PCA")
 htmlwidgets::saveWidget(p_pca, "../../figures/ParetoTI/RPM-time-series/MYC.html")
 
 ```
+```{r}
+arc_labeled = annotate_archetypes(arc, PY = 1, X = 2,Y_cycle = 3, A2 = 4, AN = 5, Y_noncycle = 6)
+
+arc_umap = arch_to_umap(arc_labeled, x_pca, which_dimensions = 1:2)
+
+
+plot_arc(arc_data = arc_umap$arc_data, data = arc_umap$data,
+         colors = cols,
+                  data_lab = as.character(Idents(data)),
+         arc_names_num = F,
+    which_dimensions = 1:2) +
+    theme_bw()
+```
 
 # Determine enriched genes and gene sets to define archetypes
 
@@ -365,13 +378,13 @@ library(matrixStats)
 # clean <- x.orig[-ix, ]
 # 
 # 
-# activ_pi = measure_activity(as.matrix(data[['RNA']]@scale.data), activity_method = 'pseudoinverse',# row names are assumed to be gene identifiers,
-#                          which = 'BP', return_as_matrix = F,
-#                          taxonomy_id = 9606, keytype = "ALIAS", #9606 is PDX, 10090 is mouse.
-#                          lower = 10, upper = 1000)
-#                          # aucell_options =list(aucMaxRank =
-#                           # nrow(as.matrix(x.orig)) * 0.05, binary = F, nCores = 3, plotStats = TRUE))
-# save(activ_pi, file="../../out/cell-lines/ParetoTI/activ_pi.Robj")
+activ_pi = measure_activity(as.matrix(data[['RNA']]@scale.data), activity_method = 'pseudoinverse',# row names are assumed to be gene identifiers,
+                         which = 'BP', return_as_matrix = F,
+                         taxonomy_id = 9606, keytype = "ALIAS", #9606 is PDX, 10090 is mouse.
+                         lower = 10, upper = 1000)
+                         # aucell_options =list(aucMaxRank =
+                        # nrow(as.matrix(x.orig)) * 0.05, binary = F, nCores = 3, plotStats = TRUE))
+save(activ_pi, file="../../out/RPM-time-series/ParetoTI/activ_pi.Robj")
 
 # activ_pi <- within(activ_pi, rm('2__deoxyribonucleotide_biosynthetic_process','2__deoxyribonucleotide_metabolic_process','2_oxoglutarate_metabolic_process','3__phosphoadenosine_5__phosphosulfate_metabolic_process',
 # '3__UTR_mediated_mRNA_destabilization',
@@ -387,10 +400,11 @@ library(matrixStats)
 
 data_attr = merge_arch_dist(arc_data = arc_ave, data = x_pca, 
                             feature_data = as.matrix(data[['RNA']]@scale.data),
-                            # colData = activ_pi, 
+                            colData = activ_pi, 
                             dist_metric = c("euclidean", "arch_weights")[1],
                             colData_id = "cells", rank = F) 
 save(data_attr, file="../../out/RPM-time-series/ParetoTI/data_attr.Robj")
+load("../../out/RPM-time-series/ParetoTI/data_attr.Robj")
 distances = data_attr$data[,c('sample_id','archetype_1','archetype_2','archetype_3','archetype_4','archetype_5','archetype_6')]
 write.csv(distances, '../../out/RPM-time-series/ParetoTI/distances.csv')
 
@@ -413,6 +427,19 @@ labs = get_top_decreasing(summary_genes = enriched_genes, summary_sets = enriche
                           cutoff_metric = "wilcoxon_p_val", 
                           p.adjust.method = "fdr", 
                           order_by = "mean_diff", order_decreasing = T)
+ggplot(data=enriched_genes[enriched_genes$x_name == 'archetype_2'], aes(x=mean_diff, y=-log10(p))) + 
+    geom_point() + 
+    theme_minimal() 
+
+tradeoff_A_X <- find_tradeoff_wilcox(data_attr$data, arc_col = c("archetype_2", "archetype_5"), 
+                                     features = data_attr$features_col,
+                                     bin_prop = 0.1, na.rm = FALSE)
+write.csv(tradeoff_A_X, '../../out/RPM-time-series/ParetoTI/tradeoff_A_X.csv')
+
+ggplot(data=tradeoff_A_X[tradeoff_A_X$x_name == 'archetype_2'], aes(x=mean_diff, y=-log10(p))) + 
+    geom_point() + 
+    theme_minimal() 
+
 # 1. N (H524)
 # 2. A/N (CORL279)
 # 3. A2 (DMS53)
@@ -438,6 +465,15 @@ labs = get_top_decreasing(summary_genes = enriched_genes, summary_sets = enriche
 #                           min_max_diff_cutoff_g = .05)
 # 
 # fit_arc_gam_1('ASCL1', "archetype_2", data_attr)
+```
+```{r}
+ggplot(data=enriched_genes[enriched_genes$x_name == 'archetype_2'], aes(x=mean_diff, y=-log10(p))) + 
+    geom_point() + 
+    theme_minimal() 
+
+ggplot(data=tradeoff_A_X[tradeoff_A_X$x_name == 'archetype_2'], aes(x=mean_diff, y=-log10(p))) + 
+    geom_point() + 
+    theme_minimal() 
 ```
 
 ## Save enrichments to be compared to bulk archetypes
