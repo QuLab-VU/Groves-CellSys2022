@@ -18,6 +18,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 # library(CytoTRACE)
 # BiocManager::install("scater")
 library(scater)
+
 # install loomR from GitHub using the remotes package 
 # remotes::install_github(repo ='mojaveazure/loomR', ref = 'develop')
 library(loomR)
@@ -161,7 +162,7 @@ library(ggfortify)
 library(cluster)
 # install.packages("data.table")
 ##################################
-# load(file="../../out/cell-lines/ParetoTI/X_magic_for_ParetoTI.Robj")
+load(file="../../out/TKO-tumors/ParetoTI/X_magic_for_ParetoTI.Robj")
 
 x <- data[["RNA"]]@scale.data
 
@@ -260,10 +261,11 @@ x_recon <- reconstruct_from_pca(x, loadings, x_pca)
 arc_genespace <- reconstruct_from_pca(x = x, loadings = loadings, arc_XC = t(arc_ave$XC))
 write.csv(t(arc_genespace), '../../out/TKO-tumors/ParetoTI/arc_gene-space.csv')
 ##################################
-# 
-# load(file="../int/single-cell/arc.Robj")
-# load( file="../int/single-cell/arc_rob.Robj")
-# load( file="../int/single-cell/arc_ave.Robj")
+
+load(file="../../out/TKO-tumors/ParetoTI/arc.Robj")
+load( file="../../out/TKO-tumors/ParetoTI/arc_rob.Robj")
+load( file="../../out/TKO-tumors/ParetoTI/arc_ave.Robj")
+write.csv(arc$S, '../../out/TKO-tumors/ParetoTI/S.csv')
 
 Idents(object = data) <- data@meta.data$tumor #add cell line labels
 

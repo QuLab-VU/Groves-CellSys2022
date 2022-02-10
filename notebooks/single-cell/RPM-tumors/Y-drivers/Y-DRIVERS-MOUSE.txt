@@ -1,0 +1,76 @@
+input rank	input term	mapped gene	annotation
+75	RUNX1	Runx1	Forms the heterodimeric complex core-binding factor (CBF) with CBFB. RUNX members modulate the transcription of their target genes through recognizing the core consensus binding sequence 5'- TGT [...]
+74	TP63	Trp63	Transformation related protein 63; Tumor protein 63; Acts as a sequence specific DNA binding transcriptional activator or repressor. The isoforms contain a varying set of transactivation and aut [...]
+73	ZFP281	Zfp281	Zinc finger protein 281; Transcription repressor that plays a role in regulation of embryonic stem cells (ESCs) differentiation. Required for ESCs differentiation and acts by mediating autorepre [...]
+72	CTCF	Ctcf	Transcriptional repressor CTCF; Chromatin binding factor that binds to DNA sequence specific sites. Involved in transcriptional regulation by binding to chromatin insulators and preventing inter [...]
+71	CEBPB	Cebpb	CCAAT/enhancer-binding protein beta; Important transcription factor regulating the expression of genes involved in immune and inflammatory responses. Plays also a significant role in adipogenesi [...]
+70	CEBPB	Cebpb	CCAAT/enhancer-binding protein beta; Important transcription factor regulating the expression of genes involved in immune and inflammatory responses. Plays also a significant role in adipogenesi [...]
+69	SA1	Stag1	Cohesin subunit SA-1; Component of cohesin complex, a complex required for the cohesion of sister chromatids after DNA replication. The cohesin complex apparently forms a large proteinaceous rin [...]
+68	ELF3	Elf3	ETS-related transcription factor Elf-3; Transcriptional activator that binds and transactivates ETS sequences containing the consensus nucleotide core sequence GGA[AT]. Acts synergistically with [...]
+67	SOX3	Sox3	Transcription factor sox1/3/14/21 (sox group b); Transcription factor SOX-3; Transcription factor required during the formation of the hypothalamo-pituitary axis. May function as a switch in neu [...]
+66	GATA6	Gata6	Transcription factor GATA-6; Transcriptional activator that regulates SEMA3C and PLXNA2. May regulate genes that protect epithelial cells from bacterial infection (By similarity). Involved in ge [...]
+65	CTCF	Ctcf	Transcriptional repressor CTCF; Chromatin binding factor that binds to DNA sequence specific sites. Involved in transcriptional regulation by binding to chromatin insulators and preventing inter [...]
+64	SOX2	Sox2	Transcription factor sox2 (sox group b); Transcription factor that forms a trimeric complex with POU5F1 (OCT3/4) on DNA and controls the expression of a number of genes involved in embryonic dev [...]
+63	MECOM	Mecom	MDS1 and EVI1 complex locus protein EVI1; Functions as a transcriptional regulator binding to DNA sequences in the promoter region of target genes and regulating positively or negatively their e [...]
+62	TCF3	Tcf3	Transcription factor E2-alpha; Transcriptional regulator. Involved in the initiation of neuronal differentiation. Heterodimers between TCF3 and tissue- specific basic helix-loop-helix (bHLH) pro [...]
+61	TCF3	Tcf3	Transcription factor E2-alpha; Transcriptional regulator. Involved in the initiation of neuronal differentiation. Heterodimers between TCF3 and tissue- specific basic helix-loop-helix (bHLH) pro [...]
+60	SRY	Sry	Sex-determining region y protein (sox group a); Sex-determining region Y protein; Transcriptional regulator that controls a genetic switch in male development. It is necessary and sufficient for [...]
+59	Nerf2	 - - 	 - - 
+58	TCFAP2C	Tfap2c	Transcription factor ap-2, gamma; Transcription factor AP-2 gamma; Sequence-specific DNA-binding protein that interacts with inducible viral and cellular enhancer elements to regulate transcript [...]
+57	GATA2	Gata2	Endothelial transcription factor GATA-2; Transcriptional activator which regulates endothelin-1 gene expression in endothelial cells. Binds to the consensus sequence 5'-AGATAG-3'
+56	GATA3	Gata3	Trans-acting T-cell-specific transcription factor GATA-3; Transcriptional activator which binds to the enhancer of the T-cell receptor alpha and delta genes. Binds to the consensus sequence 5'-A [...]
+55	PPARG	Pparg	Nuclear receptor that binds peroxisome proliferators such as hypolipidemic drugs and fatty acids. Once activated by a ligand, the nuclear receptor binds to DNA specific PPAR response elements (P [...]
+54	CEBPD	 - - 	 - - 
+53	RUNX1	Runx1	Forms the heterodimeric complex core-binding factor (CBF) with CBFB. RUNX members modulate the transcription of their target genes through recognizing the core consensus binding sequence 5'- TGT [...]
+52	KDM2B	Kdm2b	F-box and leucine-rich repeat protein 10/11; Lysine-specific demethylase 2B; Histone demethylase that demethylates 'Lys-4' and 'Lys- 36' of histone H3, thereby playing a central role in histone [...]
+51	KDM2B	Kdm2b	F-box and leucine-rich repeat protein 10/11; Lysine-specific demethylase 2B; Histone demethylase that demethylates 'Lys-4' and 'Lys- 36' of histone H3, thereby playing a central role in histone [...]
+50	MYB	Myb	Transcriptional activator Myb; Transcriptional activator; DNA-binding protein that specifically recognize the sequence 5'-YAAC[GT]G-3'. Plays an important role in the control of proliferation an [...]
+49	NUCKS1	Nucks1	Nuclear casein kinase and cyclin-dependent kinase substrate 1
+48	EGR1	Egr1	Early growth response protein 1; Transcriptional regulator. Recognizes and binds to the DNA sequence 5'-GCG(T/G)GGGCG-3'(EGR-site) in the promoter region of target genes. Binds double-stranded t [...]
+47	TCF3	Tcf3	Transcription factor E2-alpha; Transcriptional regulator. Involved in the initiation of neuronal differentiation. Heterodimers between TCF3 and tissue- specific basic helix-loop-helix (bHLH) pro [...]
+46	EP300	Ep300	Histone acetyltransferase p300; Functions as histone acetyltransferase and regulates transcription via chromatin remodeling (By similarity). Acetylates all four core histones in nucleosomes (By [...]
+45	ZNF217	Zfp217	Zinc finger protein 217
+44	E2F1	E2f1	Transcription factor E2F1; Transcription activator that binds DNA cooperatively with DP proteins through the E2 recognition site, 5'-TTTC[CG]CGC- 3' found in the promoter region of a number of g [...]
+43	KLF5	Klf5	Krueppel-like factor 5; Transcription factor that binds to GC box promoter elements. Activates the transcription of these genes; Belongs to the krueppel C2H2-type zinc-finger protein family
+42	TCF21	Tcf21	Transcription factor 21; Involved in epithelial-mesenchymal interactions in kidney and lung morphogenesis that include epithelial differentiation and branching morphogenesis. May be involved in [...]
+41	CSB	Ercc6	Excision repair cross-complementing rodent repair deficiency, complementation group 6
+40	UBF1/2	 - - 	 - - 
+39	MAF	Maf	Avian musculoaponeurotic fibrosarcoma oncogene homolog; Transcription factor Maf; Acts as a transcriptional activator or repressor. When overexpressed, represses anti-oxidant response element (A [...]
+38	FOXA1	Foxa1	Hepatocyte nuclear factor 3-alpha; Transcription factor that is involved in embryonic development, establishment of tissue-specific gene expression and regulation of gene expression in different [...]
+37	NCOR1	Ncor1	Nuclear receptor co-repressor 1; Mediates transcriptional repression by certain nuclear receptors. Part of a complex which promotes histone deacetylation and the formation of repressive chromati [...]
+36	UTX	Kdm6a	Lysine-specific demethylase 6A; Histone demethylase that specifically demethylates 'Lys- 27' of histone H3, thereby playing a central role in histone code. Demethylates trimethylated and dimethy [...]
+35	EOMES	Eomes	Eomesodermin homolog; Functions as a transcriptional activator playing a crucial role during development. Functions in trophoblast differentiation and later in gastrulation, regulating both meso [...]
+34	EKLF	Klf1	Kruppel-like factor 1 (erythroid); Transcription regulator of erythrocyte development. Binds to the CACCC box in the beta-globin gene promoter and activates transcription. Probably serves as a g [...]
+33	SMAD2	Smad2	Mothers against decapentaplegic homolog 2; Receptor-regulated SMAD (R-SMAD) that is an intracellular signal transducer and transcriptional modulator activated by TGF-beta (transforming growth fa [...]
+32	SMAD3	Smad3	Mothers against decapentaplegic homolog 3; Receptor-regulated SMAD (R-SMAD) that is an intracellular signal transducer and transcriptional modulator activated by TGF-beta (transforming growth fa [...]
+31	NANOG	Nanog	Homeobox protein NANOG; Transcription regulator involved in inner cell mass and embryonic stem (ES) cells proliferation and self-renewal. Imposes pluripotency on ES cells and prevents their diff [...]
+30	E2F4	E2f4	Transcription factor e2f4/5; Transcription factor E2F4; Transcription activator that binds DNA cooperatively with DP proteins through the E2 recognition site, 5'-TTTC[CG]CGC- 3' found in the pro [...]
+29	HSF1	Hsf1	Heat shock factor protein 1; Function as a stress-inducible and DNA-binding transcription factor that plays a central role in the transcriptional activation of the heat shock response (HSR), lea [...]
+28	CEBPA	Cebpa	CCAAT/enhancer-binding protein alpha; Transcription factor that coordinates proliferation arrest and the differentiation of myeloid progenitors, adipocytes, hepatocytes, and cells of the lung an [...]
+27	KLF6	Klf6	Krueppel-like factor 6/7; Krueppel-like factor 6; Transcriptional activator. Binds a GC box motif. Could play a role in B-cell growth and development (By similarity)
+26	ELK3	Elk3	Ets domain-containing protein elk-3 (srf accessory protein 2); ETS domain-containing protein Elk-3; May be a negative regulator of transcription, but can activate transcription when coexpressed [...]
+25	RUNX1	Runx1	Forms the heterodimeric complex core-binding factor (CBF) with CBFB. RUNX members modulate the transcription of their target genes through recognizing the core consensus binding sequence 5'- TGT [...]
+24	KDM2B	Kdm2b	F-box and leucine-rich repeat protein 10/11; Lysine-specific demethylase 2B; Histone demethylase that demethylates 'Lys-4' and 'Lys- 36' of histone H3, thereby playing a central role in histone [...]
+23	NCOR	 - - 	 - - 
+22	TTF2	Ttf2	Transcription termination factor 2; DsDNA-dependent ATPase which acts as a transcription termination factor by coupling ATP hydrolysis with removal of RNA polymerase II from the DNA template. Ma [...]
+21	TBP	Tbp	TATA-box-binding protein; General transcription factor that functions at the core of the DNA-binding multiprotein factor TFIID. Binding of TFIID to the TATA box is the initial transcriptional st [...]
+20	CLOCK	Clock	Circadian locomoter output cycles protein kaput; Transcriptional activator which forms a core component of the circadian clock. The circadian clock, an internal time- keeping system, regulates v [...]
+19	RARG	Rarg	Retinoic acid receptor gamma; Receptor for retinoic acid. Retinoic acid receptors bind as heterodimers to their target response elements in response to their ligands, all-trans or 9-cis retinoic [...]
+18	CTCF	Ctcf	Transcriptional repressor CTCF; Chromatin binding factor that binds to DNA sequence specific sites. Involved in transcriptional regulation by binding to chromatin insulators and preventing inter [...]
+17	ATF3	Atf3	Cyclic AMP-dependent transcription factor ATF-3; This protein binds the cAMP response element (CRE) (consensus: 5'-GTGACGT[AC][AG]-3'), a sequence present in many viral and cellular promoters. R [...]
+16	CJUN	 - - 	 - - 
+15	JUN	Jun	Transcription factor AP-1; Transcription factor that recognizes and binds to the enhancer heptamer motif 5'-TGA[CG]TCA-3'. Promotes activity of NR5A1 when phosphorylated by HIPK3 leading to incr [...]
+14	JUND	Jund	Transcription factor jun-D; Transcription factor binding AP-1 sites; Belongs to the bZIP family. Jun subfamily
+13	SMARCA4	Smarca4	Swi/snf related, matrix associated, actin dependent regulator of chromatin, subfamily a, member 4; Transcription activator BRG1; Involved in transcriptional activation and repression of select g [...]
+12	ATF3	Atf3	Cyclic AMP-dependent transcription factor ATF-3; This protein binds the cAMP response element (CRE) (consensus: 5'-GTGACGT[AC][AG]-3'), a sequence present in many viral and cellular promoters. R [...]
+11	TAF7L	Taf7l	Transcription initiation factor TFIID subunit 7-like; Probably functions as a spermatogensis-specific component of the DNA-binding general transcription factor complex TFIID, a multimeric protei [...]
+10	RACK7	Zmynd8	Zinc finger, mynd-type-containing 8; Zinc finger, MYND-type containing 8
+9	UBF1/2	 - - 	 - - 
+8	RELA	Rela	V-rel reticuloendotheliosis viral oncogene homolog a (avian); Transcription factor p65; NF-kappa-B is a pleiotropic transcription factor present in almost all cell types and is the endpoint of a [...]
+7	RUNX2	Runx2	Runt-related transcription factor 2; Transcription factor involved in osteoblastic differentiation and skeletal morphogenesis. Essential for the maturation of osteoblasts and both intramembranou [...]
+6	KLF4	Klf4	Krueppel-like factor 4; Transcription factor; can act both as activator and as repressor. Binds the 5'-CACCC-3' core sequence. Binds to the promoter region of its own gene and can activate its o [...]
+5	TCF3	Tcf3	Transcription factor E2-alpha; Transcriptional regulator. Involved in the initiation of neuronal differentiation. Heterodimers between TCF3 and tissue- specific basic helix-loop-helix (bHLH) pro [...]
+4	RUNX1	Runx1	Forms the heterodimeric complex core-binding factor (CBF) with CBFB. RUNX members modulate the transcription of their target genes through recognizing the core consensus binding sequence 5'- TGT [...]
+3	EGR1	Egr1	Early growth response protein 1; Transcriptional regulator. Recognizes and binds to the DNA sequence 5'-GCG(T/G)GGGCG-3'(EGR-site) in the promoter region of target genes. Binds double-stranded t [...]
+2	ZMIZ1	Zmiz1	Zinc finger MIZ domain-containing protein 1; Acts as transcriptional coactivator. Increases ligand- dependent transcriptional activity of AR and promotes AR sumoylation. The stimulation of AR ac [...]
+1	KAT2A	Kat2a	Histone acetyltransferase KAT2A; Functions as a histone acetyltransferase (HAT) to promote transcriptional activation. Acetylation of histones gives a specific tag for epigenetic transcription a [...]
