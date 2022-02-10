@@ -481,26 +481,26 @@ ggplot(data=tradeoff_A_X[tradeoff_A_X$x_name == 'archetype_2'], aes(x=mean_diff,
 The format we need the enrichment file in is a csv with the columns:
 archetype #,Feature Name,P value (Mann-Whitney),Median Difference,Mean Difference,Significant after Benjamini-Hochberg correction?,Is first bin maximal?
 
-```{r save-enriched}
-# "x_name" --> "archetype #"
-# "y_name" --> "Feature Name"
-# "mean_diff" --> "Mean Difference"
-# "p" --> "P value (Mann-Whitney)"
-# subset to p < 0.05
-# Feature names need to be capitalized and remove underscores
-enriched_sets <- enriched_sets[enriched_sets$p < 0.05, ]
-library(dplyr)
-enriched_sets <- enriched_sets %>%
-  rename("archetype #" = x_name,
-         "Feature Name" = y_name,
-         "Mean Difference" = mean_diff,
-         "P value (Mann-Whitney)" = p)
-enriched_sets$`Feature Name` <- gsub("_", " ", enriched_sets$`Feature Name`)
-enriched_sets$`Feature Name` <- toupper(enriched_sets$`Feature Name`)
+<!-- ```{r save-enriched} -->
+<!-- # "x_name" --> "archetype #" -->
+<!-- # "y_name" --> "Feature Name" -->
+<!-- # "mean_diff" --> "Mean Difference" -->
+<!-- # "p" --> "P value (Mann-Whitney)" -->
+<!-- # subset to p < 0.05 -->
+<!-- # Feature names need to be capitalized and remove underscores -->
+<!-- enriched_sets <- enriched_sets[enriched_sets$p < 0.05, ] -->
+<!-- library(dplyr) -->
+<!-- enriched_sets <- enriched_sets %>% -->
+<!--   rename("archetype #" = x_name, -->
+<!--          "Feature Name" = y_name, -->
+<!--          "Mean Difference" = mean_diff, -->
+<!--          "P value (Mann-Whitney)" = p) -->
+<!-- enriched_sets$`Feature Name` <- gsub("_", " ", enriched_sets$`Feature Name`) -->
+<!-- enriched_sets$`Feature Name` <- toupper(enriched_sets$`Feature Name`) -->
 
-write.csv(enriched_sets, '../../out/cell-lines/ParetoTI/single-cell-continuous_significant.csv')
+<!-- write.csv(enriched_sets, '../../out/cell-lines/ParetoTI/single-cell-continuous_significant.csv') -->
 
-```
+<!-- ``` -->
 
 ```{r session-info}
 session_info. = devtools::session_info()

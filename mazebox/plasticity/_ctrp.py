@@ -397,6 +397,7 @@ def ctrp_simplified(
     copy=False,
     distance_basis="X_pca",
     random_seed=1,
+    T=None,  # only include a T matrix if groupby is also None.
 ):
 
     seed(random_seed)
@@ -416,20 +417,24 @@ def ctrp_simplified(
         cell_subset = groups_to_bool(adata, groups=groups, groupby=groupby)
         _adata = adata if groups is None else adata[cell_subset]
         connectivities = get_connectivities(_adata, "distances")
-
-        ###########################
-        ### ALEX LOOK HERE
-        T = scv.tl.transition_matrix(
-            _adata,
-            vkey=vkey,
-            basis=basis,
-            weight_diffusion=weight_diffusion,
-            scale_diffusion=scale_diffusion,
-            self_transitions=self_transitions,
-            backward=False,
-        )
+        if type(T) == type(None):
+            ###########################
+            ### ALEX LOOK HERE
+            T = scv.tl.transition_matrix(
+                _adata,
+                vkey=vkey,
+                basis=basis,
+                weight_diffusion=weight_diffusion,
+                scale_diffusion=scale_diffusion,
+                self_transitions=self_transitions,
+                backward=False,
+            )
         print("(" + groups + ")" if isinstance(groups, str) else "")
+        # try:
         T = T.todense()
+        # except AttributeError:
+        # pass
+        print(T.shape)
         # Calcuate N, the fundamental matrix
         Q, ends = extract_Q(
             T, connectivities=connectivities, eigen=True, eps=eps, eps_eig=eps_eig
