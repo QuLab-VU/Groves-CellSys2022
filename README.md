@@ -1,5 +1,5 @@
-# Groves-CellSys2021
-Code and figures related to Groves et al. submitted to Cell Systems 2021
+# Groves-CellSys2022
+Code and figures related to Groves et al. Cell Systems 2022
 
 ## Repository Structure:
 - `data`
